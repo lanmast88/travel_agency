@@ -18,7 +18,8 @@
 		"ghcr.io/devcontainers/features/python:1": {}
 	},
 
-	"forwardPorts": [5173],
+	"forwardPorts": [5173, 8000],
 
+	"onCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh",
 	"postCreateCommand": "cd frontend && npm install"
 }

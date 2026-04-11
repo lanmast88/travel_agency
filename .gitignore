@@ -8,3 +8,21 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Secrets и окружение
+.env
+.env.*
+!.env.example
+
+# Ключи ES256 и сертификаты
+*.pem
+*.key
+*.p8
+*.p12
+
+# Логи
+logs/
+*.log
+
+# macOS
+.DS_Store
