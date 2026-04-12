@@ -1,9 +1,12 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import PostgresDsn, RedisDsn, SecretStr
 
+_SERVICE_ROOT = Path(__file__).resolve().parents[2]
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_SERVICE_ROOT / ".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore"
@@ -15,7 +18,9 @@ class Settings(BaseSettings):
     service_name: str = "auth-service"
     port: int = 8000
 
-    jwt_secret_key: SecretStr
+    jwt_private_key_path: Path = _SERVICE_ROOT / "private.pem"
+    jwt_public_key_path: Path = _SERVICE_ROOT / "public.pem"
+
     jwt_algorithm: str = "ES256"
     jwt_access_token_expire_minutes: int = 15
     jwt_refresh_token_expire_days: int = 30
