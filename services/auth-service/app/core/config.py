@@ -1,6 +1,6 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import PostgresDsn, RedisDsn, SecretStr
+from pydantic import PostgresDsn, RedisDsn, SecretStr, model_validator
 
 _SERVICE_ROOT = Path(__file__).resolve().parents[2]
 
@@ -13,13 +13,16 @@ class Settings(BaseSettings):
     )
 
     environment: str = "development"
-    DEBUG: bool = False
+    debug: bool = False
 
     service_name: str = "auth-service"
     port: int = 8000
 
     jwt_private_key_path: Path = _SERVICE_ROOT / "private.pem"
     jwt_public_key_path: Path = _SERVICE_ROOT / "public.pem"
+
+    jwt_private_key: SecretStr = SecretStr("")
+    jwt_public_key: str = ""
 
     jwt_algorithm: str = "ES256"
     jwt_access_token_expire_minutes: int = 15
@@ -42,11 +45,16 @@ class Settings(BaseSettings):
 
     password_reset_token_expire_minutes: int = 30
 
-    
+    @model_validator(mode="after")
+    def load_jwt_keys(self) -> "Settings":
+        self.jwt_private_key = SecretStr(self.jwt_private_key_path.read_text())
+        self.jwt_public_key = self.jwt_public_key_path.read_text()
+        return self
+
     def is_production(self) -> bool:
         return self.environment == "production"
-    
+
     def is_development(self) -> bool:
         return self.environment == "development"
-    
+
 settings = Settings()
