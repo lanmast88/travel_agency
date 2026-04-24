@@ -83,7 +83,8 @@ async def revoke_refresh_token(jti: str, exp: int, redis: Redis) -> None:
     if remaining_ttl <= 0:
         # токен уже истёк — он и так не пройдёт decode, добавлять в blacklist незачем
         return
-    await redis.setex(name=f"{_BLACKLIST_PREFIX}{jti}", time=remaining_ttl, value="1")
+    # NX — записываем только если ключа ещё нет, чтобы повторный logout не перезаписывал TTL
+    await redis.set(name=f"{_BLACKLIST_PREFIX}{jti}", value="1", ex=remaining_ttl, nx=True)
 
 
 async def verify_not_revoked(jti: str, redis: Redis) -> None:
