@@ -1,21 +1,7 @@
 import { Button, Chip } from "@mui/material";
 import { useSelector } from "react-redux";
-import {
-  AnalyticsIcon,
-  ClientsIcon,
-  DashboardIcon,
-  ReportsIcon,
-  SalesIcon,
-  TravelIcon,
-} from "../shared/ui/Icons";
-
-const navigationItems = [
-  { label: "Дашборд", active: true, icon: DashboardIcon },
-  { label: "Путёвки", active: false, icon: TravelIcon },
-  { label: "Клиенты", active: false, icon: ClientsIcon },
-  { label: "Продажи", active: false, badge: "10", icon: SalesIcon },
-  { label: "Отчёты", active: false, icon: ReportsIcon },
-];
+import { AnalyticsIcon } from "../shared/ui/Icons";
+import Aside from "../features/components/Aside";
 
 const statusToneMap = {
   Оформлена: {
@@ -49,63 +35,7 @@ function DashboardContent() {
     <div className="min-h-screen bg-transparent text-slate-900">
       <div className="mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8">
         <div className="flex min-h-[calc(100vh-2rem)] overflow-hidden rounded-[32px] border border-white/70 bg-white/75 shadow-panel backdrop-blur sm:min-h-[calc(100vh-3rem)] lg:min-h-[calc(100vh-4rem)]">
-          <aside className="hidden w-[280px] shrink-0 border-r border-slate-200/80 bg-white/80 px-6 py-7 xl:flex xl:flex-col">
-            <div className="flex items-center gap-3 border-b border-slate-200 pb-6">
-              <div className="flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-50 ring-1 ring-brand-100">
-                <img
-                  src="/logo.png"
-                  alt="StackTravel Logo"
-                  className="h-50 w-50 object-contain"
-                />
-              </div>
-              <div>
-                <div className="text-xl font-extrabold tracking-tight">
-                  StackTravel
-                </div>
-                <div className="text-sm text-slate-500">
-                  Внутренняя турсистема
-                </div>
-              </div>
-            </div>
-
-            <nav className="mt-8 space-y-2">
-              <div className="px-3 text-xs font-bold uppercase tracking-[0.24em] text-slate-400">
-                Главное
-              </div>
-              {navigationItems.map((item) => (
-                <div
-                  key={item.label}
-                  className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition  ${
-                    item.active
-                      ? "bg-brand-50 text-brand-600"
-                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-                  }`}
-                >
-                  <span className="flex items-center gap-3">
-                    <item.icon size={18} className="shrink-0" />
-                    <span>{item.label}</span>
-                  </span>
-                  {item.badge ? (
-                    <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-600">
-                      {item.badge}
-                    </span>
-                  ) : null}
-                </div>
-              ))}
-            </nav>
-
-            <div className="mt-auto rounded-3xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">
-                  Т
-                </div>
-                <div>
-                  <div className="font-bold">Тест</div>
-                  <div className="text-sm text-slate-500">Менеджер</div>
-                </div>
-              </div>
-            </div>
-          </aside>
+          <Aside />
 
           <main className="flex-1 px-4 py-4 sm:px-6 lg:px-8">
             <header className="flex flex-col gap-5 border-b border-slate-200/80 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
