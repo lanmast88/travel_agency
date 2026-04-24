@@ -76,18 +76,6 @@ def _create_app() -> FastAPI:
 app = _create_app()
 
 
-async def _check_redis() -> bool:
-    # Отдельно проверяем инициализацию и доступность:
-    # None означает что lifespan упал, исключение — что Redis недоступен в рантайме
-    if dependencies._blacklist_redis is None:
-        return False
-    try:
-        await dependencies._blacklist_redis.ping()
-        return True
-    except Exception:
-        return False
-
-
 @app.get("/health/live", include_in_schema=False)
 async def liveness() -> JSONResponse:
     """Liveness probe: процесс жив и event loop работает."""
@@ -98,7 +86,7 @@ async def liveness() -> JSONResponse:
 async def readiness() -> JSONResponse:
     """Readiness probe: сервис готов принимать трафик."""
     db_ok = await check_db_connection()
-    redis_ok = await _check_redis()
+    redis_ok = await dependencies.check_redis_health()
     all_ok = db_ok and redis_ok
 
     return JSONResponse(

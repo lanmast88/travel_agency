@@ -1,7 +1,7 @@
 from collections.abc import Callable, Coroutine
 from typing import Annotated, Any
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,36 +12,100 @@ from app.core.enums import TokenType, UserRole
 from app.core.exceptions import InvalidTokenError
 from app.logic import jwt as jwt_logic
 from app.logic.auth import AuthService
+from app.logic.rate_limiter import check_rate_limit
 from app.models.user import User
 from app.repositories.user import UserRepository
 
 
 _bearer = HTTPBearer()
 
-# Инициализируется в lifespan (main.py), здесь только хранится
+# Инициализируются в lifespan (main.py), здесь только хранятся
 _blacklist_redis: Redis | None = None
+_rate_limit_redis: Redis | None = None
 
 
 async def init_redis() -> None:
-    global _blacklist_redis
+    global _blacklist_redis, _rate_limit_redis
     _blacklist_redis = Redis.from_url(
         str(settings.redis_url),
         db=settings.redis_token_blacklist_db,
         decode_responses=True,
     )
+    _rate_limit_redis = Redis.from_url(
+        str(settings.redis_url),
+        db=settings.redis_rate_limit_db,
+        decode_responses=True,
+    )
 
 
 async def close_redis() -> None:
-    global _blacklist_redis
+    global _blacklist_redis, _rate_limit_redis
     if _blacklist_redis is not None:
         await _blacklist_redis.aclose()
         _blacklist_redis = None
+    if _rate_limit_redis is not None:
+        await _rate_limit_redis.aclose()
+        _rate_limit_redis = None
 
 
 def get_blacklist_redis() -> Redis:
     if _blacklist_redis is None:
         raise RuntimeError("Redis не инициализирован — вызовите init_redis() в lifespan")
     return _blacklist_redis
+
+
+def get_rate_limit_redis() -> Redis:
+    if _rate_limit_redis is None:
+        raise RuntimeError("Redis не инициализирован — вызовите init_redis() в lifespan")
+    return _rate_limit_redis
+
+
+def _get_client_ip(request: Request) -> str:
+    # X-Real-IP выставляется nginx из $remote_addr и не может быть подделан клиентом.
+    # X-Forwarded-For брать небезопасно — клиент может добавить произвольные IP в начало
+    real_ip = request.headers.get("X-Real-IP")
+    if real_ip:
+        return real_ip
+    return request.client.host if request.client else "unknown"
+
+
+def rate_limit(
+    endpoint: str,
+    max_attempts: int | None = None,
+    window_seconds: int | None = None,
+) -> Callable[..., Coroutine[Any, Any, None]]:
+    """Фабрика зависимостей для rate limiting по IP.
+
+    По умолчанию берёт лимиты из settings. Можно переопределить для конкретного эндпоинта:
+        Depends(rate_limit(ENDPOINT_LOGIN, max_attempts=3, window_seconds=60))
+    """
+    _max = max_attempts if max_attempts is not None else settings.rate_limit_login_attempts
+    _window = window_seconds if window_seconds is not None else settings.rate_limit_window_seconds
+
+    async def dependency(
+        request: Request,
+        redis: Annotated[Redis, Depends(get_rate_limit_redis)],
+    ) -> None:
+        ip = _get_client_ip(request)
+        await check_rate_limit(
+            key=f"rate_limit:{endpoint}:{ip}",
+            max_attempts=_max,
+            window_seconds=_window,
+            redis=redis,
+        )
+
+    return dependency
+
+
+async def check_redis_health() -> bool:
+    for client in (_blacklist_redis, _rate_limit_redis):
+        if client is None:
+            return False
+        try:
+            await client.ping()
+        except Exception:
+            return False
+    return True
 
 
 def get_user_repo(session: Annotated[AsyncSession, Depends(get_db)]) -> UserRepository:

@@ -5,6 +5,7 @@ from app.core.exceptions import (
     AccountLockedError,
     InvalidCredentialsError,
     InvalidTokenError,
+    RateLimitExceededError,
     TokenRevokedError,
     UserAlreadyExistsError,
     UserNotActiveError,
@@ -32,6 +33,14 @@ def register(app: FastAPI) -> None:
     async def account_locked_handler(r: Request, exc: AccountLockedError) -> JSONResponse:
         # 429 Too Many Requests — стандарт для блокировки после превышения попыток (RFC 6585)
         return JSONResponse(status_code=status.HTTP_429_TOO_MANY_REQUESTS, content={"detail": str(exc)})
+
+    @app.exception_handler(RateLimitExceededError)
+    async def rate_limit_exceeded_handler(r: Request, exc: RateLimitExceededError) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            content={"detail": str(exc)},
+            headers={"Retry-After": str(exc.retry_after)},
+        )
 
     @app.exception_handler(UserNotActiveError)
     async def user_not_active_handler(r: Request, exc: UserNotActiveError) -> JSONResponse:
