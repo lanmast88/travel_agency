@@ -106,5 +106,6 @@ def require_role(*roles: UserRole) -> Callable[..., Coroutine[Any, Any, User]]:
 # Annotated-алиасы для краткости в роутерах
 CurrentUser = Annotated[User, Depends(get_current_user)]
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
+UserRepoDep = Annotated[UserRepository, Depends(get_user_repo)]
 EmployeeUser = Annotated[User, Depends(require_role(UserRole.employee, UserRole.admin))]
 AdminUser = Annotated[User, Depends(require_role(UserRole.admin))]

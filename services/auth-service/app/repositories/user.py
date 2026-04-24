@@ -27,12 +27,15 @@ class UserRepository:
         self,
         role: Optional[UserRole] = None,
         is_active: Optional[bool] = None,
+        limit: int = 50,
+        offset: int = 0,
     ) -> list[User]:
         query = select(User)
         if role is not None:
             query = query.where(User.role == role)
         if is_active is not None:
             query = query.where(User.is_active == is_active)
+        query = query.limit(limit).offset(offset)
         result = await self._session.execute(query)
         return list(result.scalars().all())
 
