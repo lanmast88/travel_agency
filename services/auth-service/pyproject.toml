@@ -1,7 +1,7 @@
 [project]
 name = "auth-service"
 version = "0.1.0"
-description = "Add your description here"
+description = "Микросервис аутентификации и авторизации (JWT ES256, PostgreSQL, Redis) для платформы StackTour"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -16,3 +16,61 @@ dependencies = [
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
 ]
+
+[project.optional-dependencies]
+dev = [
+    # Тестирование
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "httpx>=0.28.0",           # AsyncClient для тестов FastAPI
+    "factory-boy>=3.3.0",      # Фабрики тестовых данных
+    # Линтинг и форматирование
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    # Стабы типов
+    "types-passlib>=1.7.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "app/models/__init__.py",
+    "app/main.py",          # точка входа, не содержит бизнес-логики
+    "app/core/config.py",   # только Pydantic-настройки
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 80
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "ASYNC", "S", "PTH"]
+ignore = [
+    "B008",   # FastAPI активно использует вызовы функций в аргументах по умолчанию
+    "S101",   # assert используется в pytest
+]
+
+[tool.ruff.format]
+line-length = 100
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+# Сторонние библиотеки без полных стабов типов
+module = ["jose.*", "passlib.*", "redis.*", "alembic.*", "factory.*"]
+ignore_missing_imports = true
