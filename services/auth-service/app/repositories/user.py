@@ -45,12 +45,14 @@ class UserRepository:
         hashed_password: str,
         first_name: str,
         last_name: str | None,
+        role: UserRole = UserRole.user,
     ) -> User:
         user = User(
             email=email,
             hashed_password=hashed_password,
             first_name=first_name,
             last_name=last_name,
+            role=role,
         )
         self._session.add(user)
         # flush без commit — id нужен до завершения транзакции,

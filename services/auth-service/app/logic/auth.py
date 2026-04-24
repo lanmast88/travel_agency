@@ -13,13 +13,25 @@ from app.logic.password import hash_password, verify_password
 from app.models.user import User
 from app.repositories.user import UserRepository
 from app.schemas.token import TokenResponse
-from app.schemas.user import PasswordChange, UserRegister
+from app.schemas.user import PasswordChange, UserCreate, UserRegister
 
 
 class AuthService:
     def __init__(self, repo: UserRepository, redis: Redis) -> None:
         self._repo = repo
         self._redis = redis
+
+    async def create_user(self, data: UserCreate) -> User:
+        if await self._repo.exists_by_email(data.email):
+            raise UserAlreadyExistsError(f"email {data.email!r} уже зарегистрирован")
+
+        return await self._repo.create(
+            email=data.email,
+            hashed_password=hash_password(data.password),
+            first_name=data.first_name,
+            last_name=data.last_name,
+            role=data.role,
+        )
 
     async def register(self, data: UserRegister) -> TokenResponse:
         if await self._repo.exists_by_email(data.email):

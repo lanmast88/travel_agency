@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.core.enums import UserRole
 from app.dependencies import AdminUser, AuthServiceDep, CurrentUser, EmployeeUser, UserRepoDep
 from app.models.user import User
-from app.schemas.user import PasswordChange, UserAdminUpdate, UserResponse, UserUpdate
+from app.schemas.user import PasswordChange, UserAdminUpdate, UserCreate, UserResponse, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -40,6 +40,11 @@ async def update_me(data: UserUpdate, current_user: CurrentUser, repo: UserRepoD
 @router.patch("/me/password", status_code=status.HTTP_204_NO_CONTENT)
 async def change_password(data: PasswordChange, current_user: CurrentUser, service: AuthServiceDep) -> None:
     await service.change_password(current_user, data)
+
+
+@router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_user(data: UserCreate, _: AdminUser, service: AuthServiceDep) -> User:
+    return await service.create_user(data)
 
 
 @router.get("", response_model=list[UserResponse])

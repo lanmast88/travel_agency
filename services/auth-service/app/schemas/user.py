@@ -87,6 +87,11 @@ class UserUpdate(BaseModel):
         return len(self.model_fields_set) > 0
 
 
+class UserCreate(UserRegister):
+    """Создание пользователя администратором — как регистрация, но с явным указанием роли."""
+    role: UserRole = UserRole.user
+
+
 class UserAdminUpdate(UserUpdate):
     is_active: Optional[bool] = None
     role: Optional[UserRole] = None
