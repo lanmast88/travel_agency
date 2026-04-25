@@ -16,9 +16,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    user_role = sa.Enum("user", "employee", "admin", name="userrole")
-    user_role.create(op.get_bind())
-
     op.create_table(
         "users",
         sa.Column("id", sa.Integer(), primary_key=True),
@@ -28,7 +25,7 @@ def upgrade() -> None:
         sa.Column("last_name", sa.String(100), nullable=True),
         sa.Column(
             "role",
-            sa.Enum("user", "employee", "admin", name="userrole", create_type=False),
+            sa.Enum("user", "employee", "admin", name="userrole"),
             nullable=False,
             server_default="user",
         ),

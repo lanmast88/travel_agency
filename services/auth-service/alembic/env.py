@@ -1,8 +1,7 @@
-import asyncio
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import engine_from_config, pool
 
 from app.core.config import settings
 from app.core.database import Base
@@ -15,11 +14,14 @@ fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
 
+# Alembic использует синхронный psycopg2 — asyncpg не поддерживает DDL checkfirst корректно
+sync_url = str(settings.database_url).replace("+asyncpg", "+psycopg2")
+
 
 def run_migrations_offline() -> None:
     """Генерирует SQL-скрипт без подключения к БД (для review или ручного применения)."""
     context.configure(
-        url=str(settings.database_url),
+        url=sync_url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -30,29 +32,23 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def _run_migrations_sync(connection) -> None:
-    context.configure(
-        connection=connection,
-        target_metadata=target_metadata,
-        compare_type=True,
-        compare_server_default=True,
-    )
-    with context.begin_transaction():
-        context.run_migrations()
+def run_migrations_online() -> None:
+    cfg = config.get_section(config.config_ini_section, {})
+    cfg["sqlalchemy.url"] = sync_url
+    connectable = engine_from_config(cfg, prefix="sqlalchemy.", poolclass=pool.NullPool)
 
-
-async def run_migrations_online() -> None:
-    # Alembic не поддерживает asyncpg напрямую — используем run_sync
-    # чтобы выполнить синхронные операции миграции через async-движок
-    engine = create_async_engine(str(settings.database_url))
-    try:
-        async with engine.connect() as connection:
-            await connection.run_sync(_run_migrations_sync)
-    finally:
-        await engine.dispose()
+    with connectable.connect() as connection:
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True,
+            compare_server_default=True,
+        )
+        with context.begin_transaction():
+            context.run_migrations()
 
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    asyncio.run(run_migrations_online())
+    run_migrations_online()
