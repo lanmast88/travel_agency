@@ -2,11 +2,13 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
 [project]
 name = "auth-service"
 version = "0.1.0"
 description = "Микросервис аутентификации и авторизации (JWT ES256, PostgreSQL, Redis) для платформы StackTour"
-readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.115.0",
@@ -19,6 +21,9 @@ dependencies = [
     "redis>=5.2.0",
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
+    "bcrypt>=3.2.0,<4.0.0",      # passlib не поддерживает bcrypt>=4.0 (убрали __about__)
+    "python-multipart>=0.0.9",   # нужен FastAPI для OAuth2PasswordRequestForm (form data)
+    "psycopg2-binary>=2.9.0",   # синхронный драйвер для Alembic миграций
 ]
 
 [project.optional-dependencies]
@@ -28,7 +33,6 @@ dev = [
     "pytest-asyncio>=0.24.0",
     "pytest-cov>=6.0.0",
     "httpx>=0.28.0",           # AsyncClient для тестов FastAPI
-    "factory-boy>=3.3.0",      # Фабрики тестовых данных
     # Линтинг и форматирование
     "ruff>=0.8.0",
     "mypy>=1.13.0",
@@ -76,5 +80,5 @@ plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
 # Сторонние библиотеки без полных стабов типов
-module = ["jose.*", "passlib.*", "redis.*", "alembic.*", "factory.*"]
+module = ["jose.*", "passlib.*", "redis.*", "alembic.*"]
 ignore_missing_imports = true
