@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.core.database import check_db_connection, engine
 from app.routers import exception_handlers
 from app.routers import router
+from app.routers.jwks import router as jwks_router
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,8 @@ def _create_app() -> FastAPI:
     # Регистрация до include_router — обработчики должны быть готовы до первого запроса
     exception_handlers.register(app)
     app.include_router(router, prefix="/api/v1")
+    # Не под /api/v1: это не бизнес-API, а discovery endpoint для других сервисов
+    app.include_router(jwks_router)
 
     return app
 

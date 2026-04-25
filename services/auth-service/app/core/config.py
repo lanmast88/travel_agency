@@ -1,6 +1,14 @@
+import base64
+import hashlib
 from pathlib import Path
-from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from cryptography.hazmat.primitives.serialization import (
+    Encoding,
+    PublicFormat,
+    load_pem_public_key,
+)
 from pydantic import PostgresDsn, RedisDsn, SecretStr, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _SERVICE_ROOT = Path(__file__).resolve().parents[2]
 
@@ -23,6 +31,9 @@ class Settings(BaseSettings):
 
     jwt_private_key: SecretStr = SecretStr("")
     jwt_public_key: str = ""
+    # kid вычисляется автоматически как SHA-256 от DER публичного ключа.
+    # Меняется при ротации ключей без ручного управления.
+    jwt_key_id: str = ""
 
     jwt_algorithm: str = "ES256"
     jwt_access_token_expire_minutes: int = 15
@@ -49,6 +60,10 @@ class Settings(BaseSettings):
     def load_jwt_keys(self) -> "Settings":
         self.jwt_private_key = SecretStr(self.jwt_private_key_path.read_text())
         self.jwt_public_key = self.jwt_public_key_path.read_text()
+        # SHA-256 от DER-представления публичного ключа — детерминированный kid
+        _key = load_pem_public_key(self.jwt_public_key.encode())
+        _der = _key.public_bytes(Encoding.DER, PublicFormat.SubjectPublicKeyInfo)
+        self.jwt_key_id = base64.urlsafe_b64encode(hashlib.sha256(_der).digest()).rstrip(b"=").decode()[:16]
         return self
 
     def is_production(self) -> bool:

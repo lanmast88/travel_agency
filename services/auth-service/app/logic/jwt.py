@@ -35,10 +35,13 @@ def _build_payload(
 
 
 def _encode(payload: dict) -> str:
+    # kid в заголовке позволяет верифицирующей стороне выбрать нужный ключ из JWKS
+    # без перебора — обязателен при поддержке ротации ключей
     return jwt.encode(
         payload,
         settings.jwt_private_key.get_secret_value(),
         algorithm=settings.jwt_algorithm,
+        headers={"kid": settings.jwt_key_id},
     )
 
 
