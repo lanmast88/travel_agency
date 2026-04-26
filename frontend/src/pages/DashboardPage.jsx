@@ -1,6 +1,7 @@
 import { Button, Chip } from "@mui/material";
 import { useSelector } from "react-redux";
 import { AnalyticsIcon } from "../shared/ui/Icons";
+import { formatMoneyCompact } from "../shared/lib/formatMoneyCompact";
 import Aside from "../features/components/Aside";
 
 const statusToneMap = {
@@ -70,7 +71,7 @@ function DashboardContent() {
                             {stat.label}
                           </div>
                           <div className="mt-3 text-5xl font-black tracking-tight text-slate-950">
-                            {stat.value}
+                            {formatMoneyCompact(stat.value)}
                           </div>
                           <div className="mt-3 text-sm font-bold text-emerald-500">
                             {stat.trend}
@@ -187,7 +188,7 @@ function DashboardContent() {
                             </div>
                           </div>
                           <div className="text-lg font-black text-brand-600">
-                            {trip.price}
+                            {formatMoneyCompact(trip.price)}
                           </div>
                         </div>
 

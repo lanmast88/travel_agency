@@ -19,7 +19,6 @@ const navigationItems = [
     icon: SalesIcon,
     path: "/sales",
   },
-  { label: "Отчёты", active: false, icon: ReportsIcon, path: "/reports" },
 ];
 
 function Aside() {
@@ -68,6 +67,25 @@ function Aside() {
             ) : null}
           </NavLink>
         ))}
+        <div className="px-3 text-xs font-bold uppercase tracking-[0.24em] text-slate-400">
+          Аналитика
+        </div>
+        <NavLink
+          to={"/reports"}
+          key={"reports"}
+          className={({ isActive = false }) =>
+            `flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+              isActive
+                ? "bg-brand-50 text-brand-600"
+                : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            }`
+          }
+        >
+          <span className="flex items-center gap-3">
+            <ReportsIcon size={18} className="shrink-0" />
+            <span>Отчёты</span>
+          </span>
+        </NavLink>
       </nav>
 
       <div className="mt-auto rounded-3xl border border-slate-200 bg-slate-50 p-4">
