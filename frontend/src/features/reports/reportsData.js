@@ -1,10 +1,3 @@
-import {
-  AverageBillIcon,
-  RevenueSummaryIcon,
-  SalesLossIcon,
-  SalesReportIcon,
-} from "../../shared/ui/Icons";
-
 export const reportsData = {
   filters: {
     dateFrom: "01.04.2026",
@@ -20,7 +13,7 @@ export const reportsData = {
       value: "48",
       trend: "+12 за период",
       tone: "border-t-brand-500",
-      icon: SalesReportIcon,
+      iconKey: "sales",
     },
     {
       id: "revenue",
@@ -28,7 +21,7 @@ export const reportsData = {
       value: "₽3 845 000",
       trend: "+₽420 000",
       tone: "border-t-emerald-500",
-      icon: RevenueSummaryIcon,
+      iconKey: "revenue",
     },
     {
       id: "average",
@@ -36,7 +29,7 @@ export const reportsData = {
       value: "₽80 100",
       trend: "+6.4%",
       tone: "border-t-violet-500",
-      icon: AverageBillIcon,
+      iconKey: "average",
     },
     {
       id: "discounts",
@@ -44,7 +37,7 @@ export const reportsData = {
       value: "₽186 500",
       trend: "-₽24 000",
       tone: "border-t-rose-500",
-      icon: SalesLossIcon,
+      iconKey: "discounts",
     },
   ],
   employeeReportTitle: "Сводка по сотрудникам",

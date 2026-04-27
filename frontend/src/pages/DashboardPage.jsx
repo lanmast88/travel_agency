@@ -1,6 +1,12 @@
 import { Button, Chip } from "@mui/material";
 import { useSelector } from "react-redux";
-import { AnalyticsIcon } from "../shared/ui/Icons";
+import {
+  AnalyticsIcon,
+  ClientsIcon,
+  LossIcon,
+  RevenueIcon,
+  SoldIcon,
+} from "../shared/ui/Icons";
 import { formatMoneyCompact } from "../shared/lib/formatMoneyCompact";
 import Aside from "../features/components/Aside";
 
@@ -21,6 +27,13 @@ const statusToneMap = {
     bg: "#ffe1e1",
     color: "#d92d20",
   },
+};
+
+const statIcons = {
+  sold: SoldIcon,
+  clients: ClientsIcon,
+  revenue: RevenueIcon,
+  loss: LossIcon,
 };
 
 function DashboardContent() {
@@ -58,7 +71,7 @@ function DashboardContent() {
             <div className="space-y-7 px-6 py-7 lg:px-10 lg:py-8">
               <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 {dashboard.stats.map((stat) => {
-                  const StatIcon = stat.icon;
+                  const StatIcon = statIcons[stat.iconKey];
 
                   return (
                     <article
@@ -125,7 +138,7 @@ function DashboardContent() {
                       <tbody>
                         {dashboard.recentSales.map((sale) => (
                           <tr
-                            key={`${sale.employee}-${sale.date}-${sale.destination}`}
+                            key={sale.id}
                             className="border-t border-slate-100"
                           >
                             <td className="px-6 py-4">
@@ -177,7 +190,7 @@ function DashboardContent() {
 
                   <div className="space-y-6 px-6 py-6">
                     {dashboard.popularTrips.map((trip) => (
-                      <div key={trip.title} className="space-y-3">
+                      <div key={trip.id} className="space-y-3">
                         <div className="flex items-start justify-between gap-4">
                           <div>
                             <div className="text-xl font-extrabold leading-tight text-slate-900">

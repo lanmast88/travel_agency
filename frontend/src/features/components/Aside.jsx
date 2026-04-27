@@ -1,3 +1,4 @@
+import { useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
 import {
   AnalyticsIcon,
@@ -22,6 +23,18 @@ const navigationItems = [
 ];
 
 function Aside() {
+  const currentUser = useSelector((state) => state.auth.currentUser);
+  const fullName = currentUser
+    ? `${currentUser.first_name} ${currentUser.last_name ?? ""}`.trim()
+    : "Новый менеджер";
+  const initials = currentUser?.first_name?.[0]?.toUpperCase() ?? "Н";
+  const roleLabel =
+    currentUser?.role === "admin"
+      ? "Администратор"
+      : currentUser?.role === "employee"
+        ? "Сотрудник"
+        : "Менеджер";
+
   return (
     <aside className="hidden w-[280px] shrink-0 border-r border-slate-200/80 bg-white/80 px-6 py-7 xl:flex xl:flex-col">
       <div className="flex items-center gap-3 border-b border-slate-200 pb-6">
@@ -88,17 +101,20 @@ function Aside() {
         </NavLink>
       </nav>
 
-      <div className="mt-auto rounded-3xl border border-slate-200 bg-slate-50 p-4">
+      <NavLink
+        to="/profile"
+        className="mt-auto rounded-3xl border border-slate-200 bg-slate-50 p-4 text-inherit no-underline transition hover:border-brand-200 hover:bg-brand-50/60"
+      >
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">
-            Т
+            {initials}
           </div>
           <div>
-            <div className="font-bold">Тест</div>
-            <div className="text-sm text-slate-500">Менеджер</div>
+            <div className="font-bold">{fullName}</div>
+            <div className="text-sm text-slate-500">{roleLabel}</div>
           </div>
         </div>
-      </div>
+      </NavLink>
     </aside>
   );
 }

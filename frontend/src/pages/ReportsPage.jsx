@@ -2,6 +2,19 @@ import { Button } from "@mui/material";
 import { useSelector } from "react-redux";
 import Aside from "../features/components/Aside";
 import { formatMoneyCompact } from "../shared/lib/formatMoneyCompact";
+import {
+  AverageBillIcon,
+  RevenueSummaryIcon,
+  SalesLossIcon,
+  SalesReportIcon,
+} from "../shared/ui/Icons";
+
+const summaryIcons = {
+  sales: SalesReportIcon,
+  revenue: RevenueSummaryIcon,
+  average: AverageBillIcon,
+  discounts: SalesLossIcon,
+};
 
 export function ReportsPage() {
   const reports = useSelector((state) => state.reports);
@@ -57,7 +70,7 @@ export function ReportsPage() {
 
               <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 {reports.summary.map((item) => {
-                  const StatIcon = item.icon;
+                  const StatIcon = summaryIcons[item.iconKey];
 
                   return (
                     <article

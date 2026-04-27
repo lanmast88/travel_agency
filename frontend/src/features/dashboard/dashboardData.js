@@ -1,10 +1,3 @@
-import {
-  ClientsIcon,
-  LossIcon,
-  RevenueIcon,
-  SoldIcon,
-} from "../../shared/ui/Icons";
-
 export const dashboardData = {
   urgentTrips: ["Турция (12 апр.)", "Египет (13 апр.)", "Кипр (14 апр.)"],
   stats: [
@@ -14,7 +7,7 @@ export const dashboardData = {
       value: "0",
       trend: "+0% за месяц",
       tone: "border-t-brand-500",
-      icon: SoldIcon,
+      iconKey: "sold",
     },
     {
       id: "clients",
@@ -22,7 +15,7 @@ export const dashboardData = {
       value: "0",
       trend: "0 новых",
       tone: "border-t-emerald-500",
-      icon: ClientsIcon,
+      iconKey: "clients",
     },
     {
       id: "revenue",
@@ -30,7 +23,7 @@ export const dashboardData = {
       value: "0 ₽",
       trend: "+0%",
       tone: "border-t-violet-500",
-      icon: RevenueIcon,
+      iconKey: "revenue",
     },
     {
       id: "discount-loss",
@@ -38,11 +31,12 @@ export const dashboardData = {
       value: "₽0",
       trend: "-₽0",
       tone: "border-t-rose-500",
-      icon: LossIcon,
+      iconKey: "loss",
     },
   ],
   recentSales: [
     {
+      id: "sale-1",
       employee: "Тест",
       initials: "Т",
       destination: "Тест",
@@ -51,6 +45,7 @@ export const dashboardData = {
       color: "bg-brand-500",
     },
     {
+      id: "sale-2",
       employee: "Тест",
       initials: "Т",
       destination: "Тест",
@@ -59,6 +54,7 @@ export const dashboardData = {
       color: "bg-violet-500",
     },
     {
+      id: "sale-3",
       employee: "Тест",
       initials: "Т",
       destination: "Тест",
@@ -67,6 +63,7 @@ export const dashboardData = {
       color: "bg-emerald-500",
     },
     {
+      id: "sale-4",
       employee: "Тест",
       initials: "Т",
       destination: "Тест",
@@ -75,6 +72,7 @@ export const dashboardData = {
       color: "bg-amber-500",
     },
     {
+      id: "sale-5",
       employee: "Тест",
       initials: "Т",
       destination: "Тест",
@@ -83,6 +81,7 @@ export const dashboardData = {
       color: "bg-rose-500",
     },
     {
+      id: "sale-6",
       employee: "Тест",
       initials: "Т",
       destination: "Тест",
@@ -93,6 +92,7 @@ export const dashboardData = {
   ],
   popularTrips: [
     {
+      id: "trip-1",
       title: "Тест",
       location: "Анталья",
       nights: 7,
@@ -103,6 +103,7 @@ export const dashboardData = {
       color: "bg-brand-500",
     },
     {
+      id: "trip-2",
       title: "Тест",
       location: "Тест",
       nights: 1,
@@ -113,6 +114,7 @@ export const dashboardData = {
       color: "bg-emerald-500",
     },
     {
+      id: "trip-3",
       title: "Тест",
       location: "Тест",
       nights: 2,
@@ -123,6 +125,7 @@ export const dashboardData = {
       color: "bg-violet-500",
     },
     {
+      id: "trip-4",
       title: "Тест",
       location: "Тест",
       nights: 5,
