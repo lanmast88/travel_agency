@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
@@ -63,7 +64,7 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     model_config = {"from_attributes": True}
 
-    id: int
+    id: UUID
     email: EmailStr
     first_name: str
     last_name: Optional[str]

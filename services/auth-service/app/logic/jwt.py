@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from jose import JWTError, jwt
 from redis.asyncio import Redis
@@ -18,7 +18,7 @@ def _now() -> int:
 
 
 def _build_payload(
-    user_id: int,
+    user_id: UUID,
     role: UserRole,
     token_type: TokenType,
     expire_seconds: int,
@@ -45,7 +45,7 @@ def _encode(payload: dict) -> str:
     )
 
 
-def create_token_pair(user_id: int, role: UserRole) -> TokenResponse:
+def create_token_pair(user_id: UUID, role: UserRole) -> TokenResponse:
     access_seconds = settings.jwt_access_token_expire_minutes * 60
     refresh_seconds = settings.jwt_refresh_token_expire_days * 24 * 3600
 

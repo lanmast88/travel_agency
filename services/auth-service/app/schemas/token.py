@@ -26,12 +26,11 @@ class TokenPayload(BaseModel):
 
     @field_validator("sub")
     @classmethod
-    def sub_must_be_valid_int(cls, v: str) -> str:
+    def sub_must_be_valid_uuid(cls, v: str) -> str:
         try:
-            if int(v) <= 0:
-                raise ValueError
-        except (ValueError, TypeError):
-            raise ValueError(f"sub должен быть строковым представлением положительного целого числа, получено: {v!r}")
+            UUID(v)
+        except ValueError:
+            raise ValueError(f"sub должен быть валидным UUID, получено: {v!r}")
         return v
 
     @field_validator("exp", "iat")
@@ -51,9 +50,9 @@ class TokenPayload(BaseModel):
         return v
 
     @property
-    def user_id(self) -> int:
-        # sub уже провалидирован как корректный int — исключения здесь быть не может
-        return int(self.sub)
+    def user_id(self) -> UUID:
+        # sub уже провалидирован как корректный UUID — исключения здесь быть не может
+        return UUID(self.sub)
 
 
 class RefreshRequest(BaseModel):

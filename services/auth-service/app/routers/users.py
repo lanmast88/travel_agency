@@ -1,4 +1,5 @@
 from typing import Annotated, Optional
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -10,7 +11,7 @@ from app.schemas.user import PasswordChange, UserAdminUpdate, UserCreate, UserRe
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-async def get_user_or_404(user_id: int, repo: UserRepoDep) -> User:
+async def get_user_or_404(user_id: UUID, repo: UserRepoDep) -> User:
     user = await repo.get_by_id(user_id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="пользователь не найден")
