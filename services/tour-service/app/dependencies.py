@@ -14,7 +14,7 @@ from app.core.enums import UserRole
 from app.core.exceptions import InvalidTokenError, JwksUnavailableError
 from app.logic.jwks_client import JwksClient
 from app.logic.jwt import decode_access_token
-from app.services.redis_cache import TourCache
+from app.logic.redis_cache import TourCache
 
 
 @dataclass(frozen=True)
