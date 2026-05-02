@@ -93,6 +93,7 @@ def get_jwks_client() -> JwksClient:
 
 
 _bearer = HTTPBearer()
+_optional_bearer = HTTPBearer(auto_error=False)
 
 
 def _parse_token_payload(raw: dict) -> TokenPayload:
@@ -143,6 +144,24 @@ async def get_current_user(
     return _parse_token_payload(payload)
 
 
+async def get_optional_user(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_optional_bearer)],
+    jwks_client: Annotated[JwksClient, Depends(get_jwks_client)],
+) -> TokenPayload | None:
+    """Верифицирует Bearer-токен если он передан; возвращает None для анонимных запросов.
+
+    Используется на публичных эндпоинтах где авторизация меняет поведение,
+    но не является обязательной.
+    """
+    if credentials is None:
+        return None
+    try:
+        payload = await decode_access_token(credentials.credentials, jwks_client)
+        return _parse_token_payload(payload)
+    except (InvalidTokenError, JwksUnavailableError, HTTPException):
+        return None
+
+
 def require_role(
     *roles: UserRole,
 ) -> Callable[..., Coroutine[Any, Any, TokenPayload]]:
@@ -187,3 +206,4 @@ AdminUser = Annotated[
     TokenPayload,
     Depends(require_role(UserRole.admin)),
 ]
+OptionalUser = Annotated[TokenPayload | None, Depends(get_optional_user)]
