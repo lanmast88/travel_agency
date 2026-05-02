@@ -36,3 +36,14 @@ class SortOrder(str, PyEnum):
 
     asc = "asc"
     desc = "desc"
+
+
+class UserRole(str, PyEnum):
+    """Роли пользователей из JWT auth-service.
+
+    Значения зеркалят UserRole в auth-service — должны совпадать точно.
+    """
+
+    user = "user"
+    employee = "employee"
+    admin = "admin"
