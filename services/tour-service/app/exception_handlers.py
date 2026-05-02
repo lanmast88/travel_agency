@@ -1,8 +1,12 @@
+import logging
+
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError, TourServiceError
+
+logger = logging.getLogger(__name__)
 
 
 def _error(detail: str) -> dict:
@@ -46,6 +50,7 @@ async def validation_error_handler(
 async def tour_service_error_handler(
     request: Request, exc: TourServiceError
 ) -> JSONResponse:
+    logger.error("unhandled domain error", exc_info=exc, extra={"path": request.url.path})
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=_error("внутренняя ошибка сервиса"),
