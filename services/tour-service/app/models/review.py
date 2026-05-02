@@ -14,8 +14,10 @@ class Review(Base):
 
     __table_args__ = (
         CheckConstraint("rating >= 1 AND rating <= 5", name="ck_review_rating"),
-        # Проверка: клиент не должен оставлять два отзыва на один тур
         Index("uq_review_client_tour", "client_id", "tour_id", unique=True),
+        # Пагинация отзывов тура с сортировкой по дате: WHERE tour_id=x ORDER BY created_at DESC.
+        # Покрывает оба условия одним индексом — standalone ix_tour_id для этого запроса избыточен
+        Index("ix_review_tour_created", "tour_id", "created_at"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(

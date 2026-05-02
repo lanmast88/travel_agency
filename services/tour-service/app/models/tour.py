@@ -30,10 +30,16 @@ class Tour(Base):
     __table_args__ = (
         CheckConstraint("price > 0", name="ck_tour_price_positive"),
         CheckConstraint("available >= 0", name="ck_tour_available_non_negative"),
-        # БД гарантирует корректный диапазон дат — start_date всегда раньше end_date
         CheckConstraint("end_date > start_date", name="ck_tour_dates_order"),
         # Основной запрос каталога: активные туры по городу с сортировкой по дате
         Index("ix_tour_status_city_start", "status", "city_id", "start_date"),
+        # Горящие туры: WHERE status=active AND start_date BETWEEN today AND today+5.
+        # ix_tour_status_city_start не оптимален — пропускает city_id при отсутствии фильтра по нему
+        Index("ix_tour_status_start", "status", "start_date"),
+        # Сортировка и фильтрация по цене — TourSortField.price, TourFilters.min/max_price
+        Index("ix_tour_price", "price"),
+        # Сортировка по дате создания — TourSortField.created_at
+        Index("ix_tour_created_at", "created_at"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
