@@ -14,6 +14,7 @@ from app.core.enums import UserRole
 from app.core.exceptions import InvalidTokenError, JwksUnavailableError
 from app.logic.jwks_client import JwksClient
 from app.logic.jwt import decode_access_token
+from app.services.redis_cache import TourCache
 
 
 @dataclass(frozen=True)
@@ -168,8 +169,15 @@ def require_role(
     return dependency
 
 
+def get_tour_cache(
+    redis: Annotated[Redis, Depends(get_cache_redis)],
+) -> TourCache:
+    return TourCache(redis, settings.tour_cache_ttl_seconds)
+
+
 DbSession = Annotated[AsyncSession, Depends(get_db)]
-CacheRedisDep = Annotated[Redis, Depends(get_cache_redis)]
+TourCacheDep = Annotated[TourCache, Depends(get_tour_cache)]
+
 CurrentUser = Annotated[TokenPayload, Depends(get_current_user)]
 StaffUser = Annotated[
     TokenPayload,
