@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.core.config import settings
@@ -59,13 +60,20 @@ app.include_router(reviews.router, prefix="/api/v1")
 Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 
-@app.get("/health", tags=["ops"])
-async def health():
+@app.get("/health/live", tags=["ops"])
+async def liveness():
+    """Liveness probe — приложение запущено и не завислo."""
+    return {"status": "ok"}
+
+
+@app.get("/health/ready", tags=["ops"])
+async def readiness():
+    """Readiness probe — зависимости доступны, pod готов принимать трафик."""
     db_ok = await check_db_connection()
     redis_ok = await check_redis_health()
-    healthy = db_ok and redis_ok
-    return {
-        "status": "ok" if healthy else "degraded",
+    body = {
+        "status": "ok" if (db_ok and redis_ok) else "unavailable",
         "db": "ok" if db_ok else "unavailable",
         "redis": "ok" if redis_ok else "unavailable",
     }
+    return JSONResponse(content=body, status_code=200 if (db_ok and redis_ok) else 503)
