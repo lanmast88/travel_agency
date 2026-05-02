@@ -11,7 +11,6 @@ import tempfile
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
-# Генерируем ключи на уровне модуля — до любого import из app.*
 _priv_key = ec.generate_private_key(ec.SECP256R1())
 
 TEST_PRIVATE_PEM: str = _priv_key.private_bytes(
@@ -34,14 +33,10 @@ with open(_PRIVATE_PATH, "w") as _f:
 with open(_PUBLIC_PATH, "w") as _f:
     _f.write(TEST_PUBLIC_PEM)
 
-# Эти переменные должны быть выставлены ДО Settings() — pydantic-settings
-# читает env vars с приоритетом выше, чем .env файл.
 os.environ.setdefault("JWT_PRIVATE_KEY_PATH", _PRIVATE_PATH)
 os.environ.setdefault("JWT_PUBLIC_KEY_PATH", _PUBLIC_PATH)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test_db")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/15")
-
-# --- Теперь можно безопасно импортировать app ---
 
 import pytest
 from unittest.mock import AsyncMock
@@ -57,12 +52,12 @@ def user():
 
 @pytest.fixture
 def admin_user():
-    return make_user(id=2, email="admin@example.com", role=UserRole.admin)
+    return make_user(email="admin@example.com", role=UserRole.admin)
 
 
 @pytest.fixture
 def employee_user():
-    return make_user(id=3, email="emp@example.com", role=UserRole.employee)
+    return make_user(email="emp@example.com", role=UserRole.employee)
 
 
 @pytest.fixture
