@@ -47,6 +47,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/tour_db
       REDIS_URL: redis://redis:6379
+      AUTH_SERVICE_JWKS_URL: http://auth-service:8000/.well-known/jwks.json
     ports:
       - "8002:8002"
     depends_on:
@@ -58,3 +59,8 @@ services:
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  default:
+    name: travel-net
+    external: true
