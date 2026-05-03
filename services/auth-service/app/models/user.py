@@ -26,7 +26,7 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
-    failed_login_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    failed_login_attempts: Mapped[int] = mapped_column(default=0)
     locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     @property
