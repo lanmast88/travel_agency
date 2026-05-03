@@ -15,7 +15,9 @@
 			"moby": "true"
 		},
 		"ghcr.io/devcontainers/features/node:2": {},
-		"ghcr.io/devcontainers/features/python:1": {}
+		"ghcr.io/devcontainers/features/python:1": {
+			"version": "3.13"
+		}
 	},
 
 	"forwardPorts": [5173, 8000],

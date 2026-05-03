@@ -3,7 +3,7 @@ FROM python:3.13-slim AS builder
 WORKDIR /app
 
 # Пиним версию uv — воспроизводимые сборки
-RUN pip install "uv==0.6.14"
+RUN pip install "uv==0.11.8"
 
 # Копируем манифест и исходники — uv pip install . читает pyproject.toml
 COPY pyproject.toml .
@@ -52,7 +52,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN pip install "uv==0.6.14"
+RUN pip install "uv==0.11.8"
 
 COPY pyproject.toml .
 COPY app/ app/

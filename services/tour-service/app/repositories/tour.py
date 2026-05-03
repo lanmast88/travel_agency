@@ -69,7 +69,6 @@ class TourRepository:
         """Возвращает все горящие туры с загруженными city и hotel.
 
         Горящий тур: active, до начала <= 5 дней, тур ещё не начался.
-        Используется WebSocket-обработчиком и Kafka-продюсером.
         """
         today = date.today()
         result = await self._session.scalars(
