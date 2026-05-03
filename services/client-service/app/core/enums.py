@@ -23,3 +23,19 @@ class UserRole(str, PyEnum):
     user = "user"
     employee = "employee"
     admin = "admin"
+
+
+class ClientSortField(str, PyEnum):
+    """Поля для сортировки списка клиентов."""
+
+    full_name = "full_name"
+    created_at = "created_at"
+    loyalty_level = "loyalty_level"
+    sales_count = "sales_count"
+
+
+class SortOrder(str, PyEnum):
+    """Направление сортировки."""
+
+    asc = "asc"
+    desc = "desc"
