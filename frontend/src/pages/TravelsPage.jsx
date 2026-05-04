@@ -198,8 +198,6 @@ function TravelsPage() {
   const [tourForm, setTourForm] = useState(initialTourForm);
   const [formTouched, setFormTouched] = useState({});
   const travel = useSelector((state) => state.travel);
-  const [cityInput, setCityInput] = useState("");
-  const [hotelInput, setHotelInput] = useState("");
   const {
     cities,
     citiesError,
@@ -407,9 +405,7 @@ function TravelsPage() {
     }));
   }
 
-  async function handleCreateTour(event) {
-    event.preventDefault();
-
+  async function handleCreateTour() {
     setFormTouched({
       city_id: true,
       hotel_id: true,
@@ -760,87 +756,61 @@ function TravelsPage() {
           Добавить путёвку
         </DialogTitle>
         <DialogContent className="!px-6 !pb-7 !pt-4 sm:!px-8">
-          <form className="space-y-4" onSubmit={handleCreateTour}>
+          <div className="space-y-4">
             {createError ? <Alert severity="error">{createError}</Alert> : null}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Autocomplete
-                freeSolo
                 options={cities}
-                getOptionLabel={(option) =>
-                  typeof option === "string" ? option : option.name
-                }
+                getOptionLabel={(option) => option.name}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
                 value={cities.find((c) => c.id === tourForm.city_id) || null}
-                inputValue={cityInput}
-                onInputChange={(e, newInput) => {
-                  setCityInput(newInput);
-                }}
                 onChange={(e, newValue) => {
-                  if (typeof newValue === "string") {
-                    setCityInput(newValue);
-                    setTourForm((prev) => ({
-                      ...prev,
-                      city_id: "",
-                    }));
-                  } else if (newValue) {
-                    setCityInput(newValue.name);
-                    setTourForm((prev) => ({
-                      ...prev,
-                      city_id: newValue.id,
-                      hotel_id: "",
-                    }));
-                  } else {
-                    setCityInput("");
-                    setTourForm((prev) => ({
-                      ...prev,
-                      city_id: "",
-                    }));
-                  }
+                  setTourForm((prev) => ({
+                    ...prev,
+                    city_id: newValue ? newValue.id : "",
+                    hotel_id: "",
+                  }));
                 }}
                 renderInput={(params) => (
-                  <TextField {...params} placeholder="Город" />
+                  <TextField
+                    {...params}
+                    label="Город"
+                    error={Boolean(formTouched.city_id && formErrors.city_id)}
+                    helperText={
+                      formTouched.city_id && formErrors.city_id
+                        ? formErrors.city_id
+                        : " "
+                    }
+                  />
                 )}
               />
 
               <Autocomplete
-                freeSolo
                 options={availableHotels}
-                getOptionLabel={(option) =>
-                  typeof option === "string"
-                    ? option
-                    : `${option.name} • ${option.stars}★`
-                }
+                getOptionLabel={(option) => `${option.name} • ${option.stars}★`}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
                 value={
                   availableHotels.find((h) => h.id === tourForm.hotel_id) ||
                   null
                 }
-                inputValue={hotelInput}
-                onInputChange={(e, newInput) => {
-                  setHotelInput(newInput);
-                }}
                 onChange={(e, newValue) => {
-                  if (typeof newValue === "string") {
-                    setHotelInput(newValue);
-                    setTourForm((prev) => ({
-                      ...prev,
-                      hotel_id: "",
-                    }));
-                  } else if (newValue) {
-                    setHotelInput(newValue.name);
-                    setTourForm((prev) => ({
-                      ...prev,
-                      hotel_id: newValue.id,
-                    }));
-                  } else {
-                    setHotelInput("");
-                    setTourForm((prev) => ({
-                      ...prev,
-                      hotel_id: "",
-                    }));
-                  }
+                  setTourForm((prev) => ({
+                    ...prev,
+                    hotel_id: newValue ? newValue.id : "",
+                  }));
                 }}
                 renderInput={(params) => (
-                  <TextField {...params} placeholder="Отель" />
+                  <TextField
+                    {...params}
+                    label="Отель"
+                    error={Boolean(formTouched.hotel_id && formErrors.hotel_id)}
+                    helperText={
+                      formTouched.hotel_id && formErrors.hotel_id
+                        ? formErrors.hotel_id
+                        : " "
+                    }
+                  />
                 )}
               />
             </div>
@@ -973,15 +943,16 @@ function TravelsPage() {
               </Button>
 
               <Button
-                type="submit"
+                type="button"
                 variant="contained"
+                onClick={handleCreateTour}
                 disabled={createStatus === "loading"}
                 className="!rounded-2xl !bg-brand-500 !px-6 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600"
               >
                 {createStatus === "loading" ? "Создаём..." : "Создать путёвку"}
               </Button>
             </div>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
