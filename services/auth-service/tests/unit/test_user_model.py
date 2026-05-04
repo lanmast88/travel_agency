@@ -47,3 +47,20 @@ class TestResetLoginAttempts:
         assert user.failed_login_attempts == 0
         assert user.locked_until is None
         assert not user.is_locked
+
+
+class TestRecordLogin:
+    def test_sets_last_login_at(self) -> None:
+        before = datetime.now(timezone.utc)
+        user = make_user()
+        user.record_login()
+        assert user.last_login_at is not None
+        assert user.last_login_at >= before
+
+    def test_does_not_touch_lock_state(self) -> None:
+        """record_login не должен трогать счётчик и блокировку."""
+        future = datetime.now(timezone.utc) + timedelta(hours=1)
+        user = make_user(failed_login_attempts=3, locked_until=future)
+        user.record_login()
+        assert user.failed_login_attempts == 3
+        assert user.locked_until == future

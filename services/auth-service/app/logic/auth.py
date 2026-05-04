@@ -68,6 +68,7 @@ class AuthService:
             raise InvalidCredentialsError("неверный email или пароль")
 
         user.reset_login_attempts()
+        user.record_login()
         await self._repo.flush()
 
         return jwt_logic.create_token_pair(user.id, user.role)

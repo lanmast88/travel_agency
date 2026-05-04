@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Enum, String, func, Integer
+from sqlalchemy import DateTime, Enum, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Uuid
 
@@ -31,8 +31,7 @@ class User(Base):
 
     @property
     def is_locked(self) -> bool:
-        # locked_until хранится с timezone, берём tzinfo из самого поля чтобы избежать ошибки сравнения naive и aware datetime
-        return self.locked_until is not None and self.locked_until > datetime.now(self.locked_until.tzinfo)
+        return self.locked_until is not None and self.locked_until > datetime.now(timezone.utc)
 
     def lock(self, minutes: int) -> None:
         self.locked_until = datetime.now(timezone.utc) + timedelta(minutes=minutes)
@@ -40,6 +39,8 @@ class User(Base):
     def reset_login_attempts(self) -> None:
         self.failed_login_attempts = 0
         self.locked_until = None
+
+    def record_login(self) -> None:
         self.last_login_at = datetime.now(timezone.utc)
 
     def record_failed_attempt(self, max_attempts: int, lock_minutes: int) -> None:
