@@ -97,6 +97,10 @@ async def start_consumer() -> None:
     logger.info("Kafka consumer запущен, топик: %s", settings.kafka_sale_created_topic)
 
 
+def is_consumer_running() -> bool:
+    return _consumer_task is not None and not _consumer_task.done()
+
+
 async def stop_consumer() -> None:
     global _consumer, _consumer_task
 
