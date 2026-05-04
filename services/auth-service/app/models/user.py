@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Enum, String, func
+from sqlalchemy import DateTime, Enum, String, func, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Uuid
 

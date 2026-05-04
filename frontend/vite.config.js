@@ -6,6 +6,18 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
+      "/api/v1/tours": {
+        target: "http://localhost:8002",
+        changeOrigin: true,
+      },
+      "/api/v1/cities": {
+        target: "http://localhost:8002",
+        changeOrigin: true,
+      },
+      "/api/v1/hotels": {
+        target: "http://localhost:8002",
+        changeOrigin: true,
+      },
       "/api": {
         target: "http://localhost:8000",
         changeOrigin: true,
