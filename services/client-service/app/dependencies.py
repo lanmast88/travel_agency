@@ -9,13 +9,16 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from jose import jwt as jose_jwt
 from pydantic import BaseModel
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.cache import get_cache
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.enums import UserRole
 from app.core.exceptions import InvalidTokenError, JwksUnavailableError
 from app.repositories.client import ClientRepository
+from app.services.client import ClientService
 
 
 _bearer = HTTPBearer()
@@ -140,7 +143,15 @@ def require_role(
     return dependency
 
 
+def get_client_service(
+    repo: Annotated[ClientRepository, Depends(get_client_repo)],
+    cache: Annotated[Redis | None, Depends(get_cache)],
+) -> ClientService:
+    return ClientService(repo, cache)
+
+
 ClientRepoDep = Annotated[ClientRepository, Depends(get_client_repo)]
+ClientServiceDep = Annotated[ClientService, Depends(get_client_service)]
 CurrentEmployee = Annotated[TokenPayload, Depends(get_current_employee)]
 EmployeeUser = Annotated[TokenPayload, Depends(require_role(UserRole.employee, UserRole.admin))]
 AdminUser = Annotated[TokenPayload, Depends(require_role(UserRole.admin))]
