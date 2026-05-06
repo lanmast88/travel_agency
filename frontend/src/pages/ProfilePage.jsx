@@ -4,10 +4,47 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Aside from "../features/components/Aside";
 import {
+  changePassword,
+  clearPasswordChangeState,
   clearProfileError,
-  logout,
+  logoutUser,
   updateCurrentUser,
 } from "../features/auth/authSlice";
+
+const PASSWORD_SPECIAL_RE = /[!@#$%^&*()\-_=+[\]{};:'",.<>?/\\|`~]/;
+const PASSWORD_DIGIT_RE = /\d/;
+
+const initialPasswordForm = {
+  current_password: "",
+  new_password: "",
+  new_password_confirm: "",
+};
+
+function validatePasswordForm(values) {
+  const errors = {};
+
+  if (!values.current_password) {
+    errors.current_password = "Введите текущий пароль";
+  }
+
+  if (!values.new_password) {
+    errors.new_password = "Введите новый пароль";
+  } else if (values.new_password.length < 8) {
+    errors.new_password = "Минимум 8 символов";
+  } else if (!PASSWORD_DIGIT_RE.test(values.new_password)) {
+    errors.new_password = "Пароль должен содержать хотя бы одну цифру";
+  } else if (!PASSWORD_SPECIAL_RE.test(values.new_password)) {
+    errors.new_password = "Пароль должен содержать хотя бы один спецсимвол";
+  }
+
+  if (!values.new_password_confirm) {
+    errors.new_password_confirm = "Подтвердите новый пароль";
+  } else if (values.new_password !== values.new_password_confirm) {
+    errors.new_password_confirm = "Пароли не совпадают";
+  }
+
+  return errors;
+}
 
 function formatRole(role) {
   if (role === "admin") {
@@ -35,15 +72,22 @@ function formatDate(value) {
 export function ProfilePage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { currentUser, profileUpdateError, profileUpdateStatus } = useSelector(
-    (state) => state.auth,
-  );
+  const {
+    currentUser,
+    profileUpdateError,
+    profileUpdateStatus,
+    passwordChangeStatus,
+    passwordChangeError,
+  } = useSelector((state) => state.auth);
   const [draft, setDraft] = useState(null);
   const [touched, setTouched] = useState({});
+  const [passwordForm, setPasswordForm] = useState(initialPasswordForm);
+  const [passwordTouched, setPasswordTouched] = useState({});
 
   useEffect(() => {
     return () => {
       dispatch(clearProfileError());
+      dispatch(clearPasswordChangeState());
     };
   }, [dispatch]);
 
@@ -67,6 +111,8 @@ export function ProfilePage() {
   }, [form]);
 
   const isSaving = profileUpdateStatus === "loading";
+  const isChangingPassword = passwordChangeStatus === "loading";
+  const passwordErrors = useMemo(() => validatePasswordForm(passwordForm), [passwordForm]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -111,8 +157,42 @@ export function ProfilePage() {
     }
   }
 
-  function handleLogout() {
-    dispatch(logout());
+  function handlePasswordChange(event) {
+    const { name, value } = event.target;
+    setPasswordForm((current) => ({ ...current, [name]: value }));
+    if (passwordChangeStatus === "succeeded") {
+      dispatch(clearPasswordChangeState());
+    }
+  }
+
+  function handlePasswordBlur(event) {
+    const { name } = event.target;
+    setPasswordTouched((current) => ({ ...current, [name]: true }));
+  }
+
+  async function handlePasswordSubmit(event) {
+    event.preventDefault();
+
+    setPasswordTouched({
+      current_password: true,
+      new_password: true,
+      new_password_confirm: true,
+    });
+
+    if (Object.keys(passwordErrors).length > 0) {
+      return;
+    }
+
+    const resultAction = await dispatch(changePassword(passwordForm));
+
+    if (changePassword.fulfilled.match(resultAction)) {
+      setPasswordForm(initialPasswordForm);
+      setPasswordTouched({});
+    }
+  }
+
+  async function handleLogout() {
+    await dispatch(logoutUser());
     navigate("/register?mode=login", { replace: true });
   }
 
@@ -242,6 +322,87 @@ export function ProfilePage() {
                     </div>
                   </div>
                 </div>
+              </section>
+
+              <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/60 lg:col-span-2">
+                <div className="mb-6">
+                  <div className="text-sm font-bold uppercase tracking-[0.18em] text-brand-500">
+                    Безопасность
+                  </div>
+                  <div className="mt-2 text-2xl font-extrabold tracking-tight text-slate-950">
+                    Смена пароля
+                  </div>
+                </div>
+
+                <form className="space-y-4" onSubmit={handlePasswordSubmit}>
+                  {passwordChangeError ? (
+                    <Alert severity="error">{passwordChangeError}</Alert>
+                  ) : null}
+                  {passwordChangeStatus === "succeeded" ? (
+                    <Alert severity="success">Пароль успешно изменён.</Alert>
+                  ) : null}
+
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <TextField
+                      fullWidth
+                      type="password"
+                      label="Текущий пароль"
+                      name="current_password"
+                      value={passwordForm.current_password}
+                      onChange={handlePasswordChange}
+                      onBlur={handlePasswordBlur}
+                      error={Boolean(passwordTouched.current_password && passwordErrors.current_password)}
+                      helperText={
+                        passwordTouched.current_password && passwordErrors.current_password
+                          ? passwordErrors.current_password
+                          : " "
+                      }
+                    />
+
+                    <TextField
+                      fullWidth
+                      type="password"
+                      label="Новый пароль"
+                      name="new_password"
+                      value={passwordForm.new_password}
+                      onChange={handlePasswordChange}
+                      onBlur={handlePasswordBlur}
+                      error={Boolean(passwordTouched.new_password && passwordErrors.new_password)}
+                      helperText={
+                        passwordTouched.new_password && passwordErrors.new_password
+                          ? passwordErrors.new_password
+                          : "Мин. 8 символов, цифра и спецсимвол"
+                      }
+                    />
+
+                    <TextField
+                      fullWidth
+                      type="password"
+                      label="Подтверждение пароля"
+                      name="new_password_confirm"
+                      value={passwordForm.new_password_confirm}
+                      onChange={handlePasswordChange}
+                      onBlur={handlePasswordBlur}
+                      error={Boolean(passwordTouched.new_password_confirm && passwordErrors.new_password_confirm)}
+                      helperText={
+                        passwordTouched.new_password_confirm && passwordErrors.new_password_confirm
+                          ? passwordErrors.new_password_confirm
+                          : " "
+                      }
+                    />
+                  </div>
+
+                  <div className="flex pt-2">
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disabled={isChangingPassword}
+                      className="!rounded-2xl !bg-brand-500 !px-6 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600"
+                    >
+                      {isChangingPassword ? "Сохраняем..." : "Изменить пароль"}
+                    </Button>
+                  </div>
+                </form>
               </section>
             </div>
           </main>

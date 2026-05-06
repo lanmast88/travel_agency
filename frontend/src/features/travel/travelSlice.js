@@ -105,6 +105,34 @@ export const fetchHotels = createAsyncThunk(
   },
 );
 
+export const updateTour = createAsyncThunk(
+  "travel/updateTour",
+  async ({ id, ...payload }, { rejectWithValue }) => {
+    try {
+      const { data } = await http.patch(`/v1/tours/${id}`, payload);
+      return data;
+    } catch (error) {
+      return rejectWithValue(
+        getErrorMessage(error, "Не удалось обновить путёвку."),
+      );
+    }
+  },
+);
+
+export const deleteTour = createAsyncThunk(
+  "travel/deleteTour",
+  async (id, { rejectWithValue }) => {
+    try {
+      await http.delete(`/v1/tours/${id}`);
+      return id;
+    } catch (error) {
+      return rejectWithValue(
+        getErrorMessage(error, "Не удалось удалить путёвку."),
+      );
+    }
+  },
+);
+
 export const createTour = createAsyncThunk(
   "travel/createTour",
   async (payload, { rejectWithValue }) => {
@@ -146,6 +174,10 @@ const travelSlice = createSlice({
     hotelsError: null,
     createStatus: "idle",
     createError: null,
+    updateStatus: "idle",
+    updateError: null,
+    deleteStatus: "idle",
+    deleteError: null,
   },
   reducers: {
     setTravelFilter(state, action) {
@@ -159,6 +191,14 @@ const travelSlice = createSlice({
     clearCreateTourState(state) {
       state.createStatus = "idle";
       state.createError = null;
+    },
+    clearUpdateTourState(state) {
+      state.updateStatus = "idle";
+      state.updateError = null;
+    },
+    clearDeleteTourState(state) {
+      state.deleteStatus = "idle";
+      state.deleteError = null;
     },
   },
   extraReducers: (builder) => {
@@ -223,10 +263,48 @@ const travelSlice = createSlice({
       .addCase(createTour.rejected, (state, action) => {
         state.createStatus = "failed";
         state.createError = action.payload ?? "Не удалось создать путёвку.";
+      })
+      .addCase(updateTour.pending, (state) => {
+        state.updateStatus = "loading";
+        state.updateError = null;
+      })
+      .addCase(updateTour.fulfilled, (state, action) => {
+        state.updateStatus = "succeeded";
+        state.updateError = null;
+        const updated = action.payload;
+        state.items = state.items.map((item) =>
+          item.id === updated.id
+            ? { ...updated, city_id: updated.city.id, hotel_id: updated.hotel.id }
+            : item,
+        );
+      })
+      .addCase(updateTour.rejected, (state, action) => {
+        state.updateStatus = "failed";
+        state.updateError = action.payload ?? "Не удалось обновить путёвку.";
+      })
+      .addCase(deleteTour.pending, (state) => {
+        state.deleteStatus = "loading";
+        state.deleteError = null;
+      })
+      .addCase(deleteTour.fulfilled, (state, action) => {
+        state.deleteStatus = "succeeded";
+        state.deleteError = null;
+        state.items = state.items.filter((item) => item.id !== action.payload);
+        state.total = Math.max(0, state.total - 1);
+        state.pages = Math.max(1, Math.ceil(state.total / state.pageSize));
+      })
+      .addCase(deleteTour.rejected, (state, action) => {
+        state.deleteStatus = "failed";
+        state.deleteError = action.payload ?? "Не удалось удалить путёвку.";
       });
   },
 });
 
-export const { clearCreateTourState, setTravelFilter, setTravelPage } =
-  travelSlice.actions;
+export const {
+  clearCreateTourState,
+  clearUpdateTourState,
+  clearDeleteTourState,
+  setTravelFilter,
+  setTravelPage,
+} = travelSlice.actions;
 export const travelReducer = travelSlice.reducer;

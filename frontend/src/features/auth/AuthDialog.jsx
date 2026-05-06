@@ -9,11 +9,13 @@ export function AuthDialog() {
     (state) => state.auth,
   );
 
+  const isSessionExpired = Boolean(authDialogMessage);
+
   return (
     <Dialog
       open={authDialogOpen}
       fullWidth
-      maxWidth="sm"
+      maxWidth="xs"
       onClose={(_, reason) => {
         if (reason === "backdropClick") {
           return;
@@ -27,9 +29,19 @@ export function AuthDialog() {
       }}
     >
       <DialogContent className="!px-6 !py-7 sm:!px-8 sm:!py-8">
+        {isSessionExpired && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5">
+            <div className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">
+              Сессия завершена
+            </div>
+            <div className="mt-1 text-sm font-medium text-amber-800">
+              {authDialogMessage}
+            </div>
+          </div>
+        )}
         <AuthPanel
           initialMode={authDialogMode}
-          bannerMessage={authDialogMessage}
+          hideTabs={isSessionExpired}
           compact
           onSuccess={() => {
             dispatch(closeAuthDialog());

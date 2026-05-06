@@ -32,6 +32,28 @@ function clearPersistedAuth() {
   window.localStorage.removeItem(AUTH_STORAGE_KEY);
 }
 
+function resetAuthState(state) {
+  state.accessToken = null;
+  state.refreshToken = null;
+  state.tokenType = null;
+  state.expiresIn = null;
+  state.refreshExpiresIn = null;
+  state.currentUser = null;
+  state.registerStatus = "idle";
+  state.registerError = null;
+  state.loginStatus = "idle";
+  state.loginError = null;
+  state.profileStatus = "idle";
+  state.profileError = null;
+  state.profileUpdateStatus = "idle";
+  state.profileUpdateError = null;
+  state.passwordChangeStatus = "idle";
+  state.passwordChangeError = null;
+  state.authDialogOpen = false;
+  state.authDialogMessage = null;
+  clearPersistedAuth();
+}
+
 async function completeAuthRequest(request) {
   const { data } = await request;
   persistAuth(data);
@@ -125,6 +147,33 @@ export const fetchCurrentUser = createAsyncThunk(
   },
 );
 
+export const changePassword = createAsyncThunk(
+  "auth/changePassword",
+  async (payload, { rejectWithValue }) => {
+    try {
+      await http.patch("/v1/users/me/password", payload);
+    } catch (error) {
+      return rejectWithValue(
+        getErrorMessage(error, "Не удалось изменить пароль. Попробуйте ещё раз."),
+      );
+    }
+  },
+);
+
+export const logoutUser = createAsyncThunk(
+  "auth/logoutUser",
+  async (_, { getState }) => {
+    const { refreshToken } = getState().auth;
+    if (refreshToken) {
+      try {
+        await http.post("/v1/auth/logout", { refresh_token: refreshToken });
+      } catch {
+        // fire-and-forget: всегда разлогиниваем локально, даже если сервер недоступен
+      }
+    }
+  },
+);
+
 export const updateCurrentUser = createAsyncThunk(
   "auth/updateCurrentUser",
   async (payload, { rejectWithValue }) => {
@@ -164,6 +213,8 @@ const authSlice = createSlice({
     profileError: null,
     profileUpdateStatus: "idle",
     profileUpdateError: null,
+    passwordChangeStatus: "idle",
+    passwordChangeError: null,
     authDialogOpen: false,
     authDialogMode: "login",
     authDialogMessage: null,
@@ -179,6 +230,10 @@ const authSlice = createSlice({
       state.profileError = null;
       state.profileUpdateError = null;
     },
+    clearPasswordChangeState(state) {
+      state.passwordChangeStatus = "idle";
+      state.passwordChangeError = null;
+    },
     closeAuthDialog(state) {
       state.authDialogOpen = false;
       state.authDialogMessage = null;
@@ -189,44 +244,14 @@ const authSlice = createSlice({
       state.authDialogMessage = action.payload?.message ?? null;
     },
     expireSession(state, action) {
-      state.accessToken = null;
-      state.refreshToken = null;
-      state.tokenType = null;
-      state.expiresIn = null;
-      state.refreshExpiresIn = null;
-      state.currentUser = null;
-      state.registerStatus = "idle";
-      state.registerError = null;
-      state.loginStatus = "idle";
-      state.loginError = null;
-      state.profileStatus = "idle";
-      state.profileError = null;
-      state.profileUpdateStatus = "idle";
-      state.profileUpdateError = null;
+      resetAuthState(state);
       state.authDialogOpen = true;
       state.authDialogMode = "login";
       state.authDialogMessage =
         action.payload ?? "Сессия истекла. Войдите снова, чтобы продолжить.";
-      clearPersistedAuth();
     },
     logout(state) {
-      state.accessToken = null;
-      state.refreshToken = null;
-      state.tokenType = null;
-      state.expiresIn = null;
-      state.refreshExpiresIn = null;
-      state.currentUser = null;
-      state.registerStatus = "idle";
-      state.registerError = null;
-      state.loginStatus = "idle";
-      state.loginError = null;
-      state.profileStatus = "idle";
-      state.profileError = null;
-      state.profileUpdateStatus = "idle";
-      state.profileUpdateError = null;
-      state.authDialogOpen = false;
-      state.authDialogMessage = null;
-      clearPersistedAuth();
+      resetAuthState(state);
     },
   },
   extraReducers: (builder) => {
@@ -299,12 +324,29 @@ const authSlice = createSlice({
         state.profileUpdateStatus = "failed";
         state.profileUpdateError =
           action.payload ?? "Не удалось сохранить профиль.";
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        resetAuthState(state);
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.passwordChangeStatus = "loading";
+        state.passwordChangeError = null;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.passwordChangeStatus = "succeeded";
+        state.passwordChangeError = null;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.passwordChangeStatus = "failed";
+        state.passwordChangeError =
+          action.payload ?? "Не удалось изменить пароль. Попробуйте ещё раз.";
       });
   },
 });
 
 export const {
   clearLoginError,
+  clearPasswordChangeState,
   clearProfileError,
   clearRegisterError,
   closeAuthDialog,

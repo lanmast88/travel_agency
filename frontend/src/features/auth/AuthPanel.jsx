@@ -65,7 +65,7 @@ function validateLoginForm(values) {
 export function AuthPanel({
   initialMode = "register",
   onSuccess,
-  bannerMessage = null,
+  hideTabs = false,
   showHomeLink = false,
   compact = false,
 }) {
@@ -207,36 +207,37 @@ export function AuthPanel({
           : "Введите email и пароль, чтобы вернуться к рабочему столу."}
       </p>
 
-      <div className="mt-6 grid grid-cols-2 rounded-2xl bg-slate-100 p-1">
-        <button
-          type="button"
-          onClick={() => switchMode("register")}
-          className={`rounded-[14px] px-4 py-3 text-sm font-bold transition ${
-            isRegisterMode
-              ? "bg-white text-slate-950 shadow-sm"
-              : "text-slate-500 hover:text-slate-900"
-          }`}
-        >
-          Регистрация
-        </button>
-        <button
-          type="button"
-          onClick={() => switchMode("login")}
-          className={`rounded-[14px] px-4 py-3 text-sm font-bold transition ${
-            !isRegisterMode
-              ? "bg-white text-slate-950 shadow-sm"
-              : "text-slate-500 hover:text-slate-900"
-          }`}
-        >
-          Вход
-        </button>
-      </div>
+      {!hideTabs && (
+        <div className="mt-6 grid grid-cols-2 rounded-2xl bg-slate-100 p-1">
+          <button
+            type="button"
+            onClick={() => switchMode("register")}
+            className={`rounded-[14px] px-4 py-3 text-sm font-bold transition ${
+              isRegisterMode
+                ? "bg-white text-slate-950 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            Регистрация
+          </button>
+          <button
+            type="button"
+            onClick={() => switchMode("login")}
+            className={`rounded-[14px] px-4 py-3 text-sm font-bold transition ${
+              !isRegisterMode
+                ? "bg-white text-slate-950 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            Вход
+          </button>
+        </div>
+      )}
 
       <form
         className="mt-8 space-y-4"
         onSubmit={isRegisterMode ? handleRegisterSubmit : handleLoginSubmit}
       >
-        {bannerMessage ? <Alert severity="warning">{bannerMessage}</Alert> : null}
         {submitError ? <Alert severity="error">{submitError}</Alert> : null}
 
         <TextField

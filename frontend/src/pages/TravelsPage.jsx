@@ -14,12 +14,16 @@ import { useDispatch, useSelector } from "react-redux";
 import Aside from "../features/components/Aside";
 import {
   clearCreateTourState,
+  clearDeleteTourState,
+  clearUpdateTourState,
   createTour,
+  deleteTour,
   fetchCities,
   fetchHotels,
   fetchTours,
   setTravelFilter,
   setTravelPage,
+  updateTour,
 } from "../features/travel/travelSlice";
 import { Autocomplete } from "@mui/material";
 
@@ -81,6 +85,34 @@ function PlusIcon() {
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+      <path
+        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+      <path
+        d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -194,15 +226,32 @@ const initialTourForm = {
 
 function TravelsPage() {
   const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.currentUser);
+  const isStaff = currentUser?.role === "employee" || currentUser?.role === "admin";
+  const isAdmin = currentUser?.role === "admin";
+
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [tourForm, setTourForm] = useState(initialTourForm);
   const [formTouched, setFormTouched] = useState({});
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingTourId, setEditingTourId] = useState(null);
+  const [editForm, setEditForm] = useState(initialTourForm);
+  const [editFormTouched, setEditFormTouched] = useState({});
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingTour, setDeletingTour] = useState(null);
+
   const travel = useSelector((state) => state.travel);
   const {
     cities,
     citiesError,
     createError,
     createStatus,
+    updateStatus,
+    updateError,
+    deleteStatus,
+    deleteError,
     filters,
     hotels,
     hotelsError,
@@ -246,12 +295,31 @@ function TravelsPage() {
   );
 
   const availableHotels = useMemo(() => {
-    if (!tourForm.city_id) {
-      return hotels;
-    }
-
+    if (!tourForm.city_id) return hotels;
     return hotels.filter((hotel) => hotel.city.id === tourForm.city_id);
   }, [hotels, tourForm.city_id]);
+
+  const availableEditHotels = useMemo(() => {
+    if (!editForm.city_id) return hotels;
+    return hotels.filter((hotel) => hotel.city.id === editForm.city_id);
+  }, [hotels, editForm.city_id]);
+
+  const editFormErrors = useMemo(() => {
+    const errors = {};
+    if (!editForm.city_id) errors.city_id = "Выберите город";
+    if (!editForm.hotel_id) errors.hotel_id = "Выберите отель";
+    if (!editForm.name.trim()) errors.name = "Введите название";
+    if (!editForm.start_date) errors.start_date = "Укажите дату начала";
+    if (!editForm.end_date) errors.end_date = "Укажите дату окончания";
+    if (editForm.start_date && editForm.end_date && editForm.end_date <= editForm.start_date) {
+      errors.end_date = "Дата окончания должна быть позже даты начала";
+    }
+    if (!editForm.price || Number(editForm.price) <= 0) errors.price = "Цена должна быть больше 0";
+    if (editForm.available === "" || Number(editForm.available) < 0) {
+      errors.available = "Количество мест не может быть отрицательным";
+    }
+    return errors;
+  }, [editForm]);
 
   const visibleTours = useMemo(() => {
     const query = filters.search.trim().toLowerCase();
@@ -403,6 +471,94 @@ function TravelsPage() {
       ...current,
       [name]: true,
     }));
+  }
+
+  function handleOpenEditDialog(tour) {
+    dispatch(clearUpdateTourState());
+    setEditForm({
+      city_id: tour.city_id,
+      hotel_id: tour.hotel_id,
+      name: tour.name,
+      description: "",
+      start_date: tour.start_date,
+      end_date: tour.end_date,
+      price: String(tour.price),
+      available: String(tour.available),
+      meal_type: tour.meal_type,
+      status: tour.status,
+    });
+    setEditFormTouched({});
+    setEditingTourId(tour.id);
+    setEditDialogOpen(true);
+  }
+
+  function handleCloseEditDialog() {
+    if (updateStatus === "loading") return;
+    dispatch(clearUpdateTourState());
+    setEditDialogOpen(false);
+    setEditingTourId(null);
+  }
+
+  function handleEditFormChange(event) {
+    const { name, value } = event.target;
+    setEditForm((current) => {
+      if (name === "city_id") return { ...current, city_id: value, hotel_id: "" };
+      return { ...current, [name]: value };
+    });
+  }
+
+  function handleEditFormBlur(event) {
+    const { name } = event.target;
+    setEditFormTouched((current) => ({ ...current, [name]: true }));
+  }
+
+  async function handleEditTour() {
+    setEditFormTouched({
+      city_id: true, hotel_id: true, name: true,
+      start_date: true, end_date: true, price: true, available: true,
+    });
+    if (Object.keys(editFormErrors).length > 0) return;
+
+    const resultAction = await dispatch(
+      updateTour({
+        id: editingTourId,
+        city_id: editForm.city_id,
+        hotel_id: editForm.hotel_id,
+        name: editForm.name.trim(),
+        description: editForm.description.trim() || null,
+        start_date: editForm.start_date,
+        end_date: editForm.end_date,
+        price: Number(editForm.price),
+        available: Number(editForm.available),
+        meal_type: editForm.meal_type,
+        status: editForm.status,
+      }),
+    );
+
+    if (updateTour.fulfilled.match(resultAction)) {
+      handleCloseEditDialog();
+    }
+  }
+
+  function handleOpenDeleteDialog(tour) {
+    dispatch(clearDeleteTourState());
+    setDeletingTour({ id: tour.id, name: tour.name });
+    setDeleteDialogOpen(true);
+  }
+
+  function handleCloseDeleteDialog() {
+    if (deleteStatus === "loading") return;
+    dispatch(clearDeleteTourState());
+    setDeleteDialogOpen(false);
+    setDeletingTour(null);
+  }
+
+  async function handleDeleteTour() {
+    if (!deletingTour) return;
+    const resultAction = await dispatch(deleteTour(deletingTour.id));
+    if (deleteTour.fulfilled.match(resultAction)) {
+      handleCloseDeleteDialog();
+    }
   }
 
   async function handleCreateTour() {
@@ -596,14 +752,15 @@ function TravelsPage() {
                 <div className="overflow-hidden">
                   <table className="w-full table-fixed border-collapse">
                     <colgroup>
-                      <col className="w-[20%]" />
-                      <col className="w-[14%]" />
-                      <col className="w-[12%]" />
+                      <col className="w-[18%]" />
                       <col className="w-[12%]" />
                       <col className="w-[10%]" />
-                      <col className="w-[11%]" />
-                      <col className="w-[13%]" />
-                      <col className="w-[8%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[12%]" />
+                      <col className="w-[9%]" />
+                      <col className="w-[9%]" />
                     </colgroup>
                     <thead className="bg-slate-50">
                       <tr className="text-left text-xs uppercase tracking-[0.1em] text-slate-400">
@@ -615,6 +772,7 @@ function TravelsPage() {
                         <th className="px-5 py-4">В наличии</th>
                         <th className="px-5 py-4">Услуги</th>
                         <th className="px-5 py-4">Статус</th>
+                        <th className="px-5 py-4"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -673,6 +831,30 @@ function TravelsPage() {
                               {tour.statusTone === "neutral" ? "◉ " : ""}
                               {tour.statusLabel}
                             </span>
+                          </td>
+                          <td className="px-3 py-5">
+                            <div className="flex items-center gap-1">
+                              {isStaff && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditDialog(tour)}
+                                  className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-brand-600"
+                                  title="Редактировать"
+                                >
+                                  <EditIcon />
+                                </button>
+                              )}
+                              {isAdmin && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenDeleteDialog(tour)}
+                                  className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+                                  title="Удалить"
+                                >
+                                  <TrashIcon />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -741,6 +923,228 @@ function TravelsPage() {
           </main>
         </div>
       </div>
+
+      {/* Диалог редактирования */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={handleCloseEditDialog}
+        fullWidth
+        maxWidth="md"
+        PaperProps={{
+          className:
+            "!rounded-[32px] !bg-white/95 !shadow-2xl backdrop-blur supports-[backdrop-filter]:!bg-white/90",
+        }}
+      >
+        <DialogTitle className="!px-6 !pt-6 !text-2xl !font-extrabold !tracking-tight !text-slate-950 sm:!px-8">
+          Редактировать путёвку
+        </DialogTitle>
+        <DialogContent className="!px-6 !pb-7 !pt-4 sm:!px-8">
+          <div className="space-y-4">
+            {updateError ? <Alert severity="error">{updateError}</Alert> : null}
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Autocomplete
+                options={cities}
+                getOptionLabel={(option) => option.name}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                value={cities.find((c) => c.id === editForm.city_id) || null}
+                onChange={(e, newValue) => {
+                  setEditForm((prev) => ({
+                    ...prev,
+                    city_id: newValue ? newValue.id : "",
+                    hotel_id: "",
+                  }));
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Город"
+                    error={Boolean(editFormTouched.city_id && editFormErrors.city_id)}
+                    helperText={editFormTouched.city_id && editFormErrors.city_id ? editFormErrors.city_id : " "}
+                  />
+                )}
+              />
+              <Autocomplete
+                options={availableEditHotels}
+                getOptionLabel={(option) => `${option.name} • ${option.stars}★`}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                value={availableEditHotels.find((h) => h.id === editForm.hotel_id) || null}
+                onChange={(e, newValue) => {
+                  setEditForm((prev) => ({ ...prev, hotel_id: newValue ? newValue.id : "" }));
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Отель"
+                    error={Boolean(editFormTouched.hotel_id && editFormErrors.hotel_id)}
+                    helperText={editFormTouched.hotel_id && editFormErrors.hotel_id ? editFormErrors.hotel_id : " "}
+                  />
+                )}
+              />
+            </div>
+
+            <TextField
+              fullWidth
+              label="Название тура"
+              name="name"
+              value={editForm.name}
+              onChange={handleEditFormChange}
+              onBlur={handleEditFormBlur}
+              error={Boolean(editFormTouched.name && editFormErrors.name)}
+              helperText={editFormTouched.name && editFormErrors.name ? editFormErrors.name : " "}
+            />
+
+            <TextField
+              fullWidth
+              multiline
+              minRows={3}
+              label="Описание"
+              name="description"
+              value={editForm.description}
+              onChange={handleEditFormChange}
+              helperText="Необязательно"
+            />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextField
+                fullWidth
+                type="date"
+                label="Дата начала"
+                name="start_date"
+                value={editForm.start_date}
+                onChange={handleEditFormChange}
+                onBlur={handleEditFormBlur}
+                error={Boolean(editFormTouched.start_date && editFormErrors.start_date)}
+                helperText={editFormTouched.start_date && editFormErrors.start_date ? editFormErrors.start_date : " "}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                fullWidth
+                type="date"
+                label="Дата окончания"
+                name="end_date"
+                value={editForm.end_date}
+                onChange={handleEditFormChange}
+                onBlur={handleEditFormBlur}
+                error={Boolean(editFormTouched.end_date && editFormErrors.end_date)}
+                helperText={editFormTouched.end_date && editFormErrors.end_date ? editFormErrors.end_date : " "}
+                InputLabelProps={{ shrink: true }}
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <TextField
+                fullWidth
+                type="number"
+                label="Цена"
+                name="price"
+                value={editForm.price}
+                onChange={handleEditFormChange}
+                onBlur={handleEditFormBlur}
+                error={Boolean(editFormTouched.price && editFormErrors.price)}
+                helperText={editFormTouched.price && editFormErrors.price ? editFormErrors.price : " "}
+              />
+              <TextField
+                fullWidth
+                type="number"
+                label="Мест"
+                name="available"
+                value={editForm.available}
+                onChange={handleEditFormChange}
+                onBlur={handleEditFormBlur}
+                error={Boolean(editFormTouched.available && editFormErrors.available)}
+                helperText={editFormTouched.available && editFormErrors.available ? editFormErrors.available : " "}
+              />
+              <TextField
+                select
+                fullWidth
+                label="Питание"
+                name="meal_type"
+                value={editForm.meal_type}
+                onChange={handleEditFormChange}
+              >
+                <MenuItem value="none">Без питания</MenuItem>
+                <MenuItem value="breakfast">Завтраки</MenuItem>
+                <MenuItem value="all">Все включено</MenuItem>
+              </TextField>
+              <TextField
+                select
+                fullWidth
+                label="Статус"
+                name="status"
+                value={editForm.status}
+                onChange={handleEditFormChange}
+              >
+                <MenuItem value="draft">Черновик</MenuItem>
+                <MenuItem value="active">Активна</MenuItem>
+                <MenuItem value="archived">Архив</MenuItem>
+              </TextField>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+              <Button
+                variant="outlined"
+                onClick={handleCloseEditDialog}
+                disabled={updateStatus === "loading"}
+                className="!rounded-2xl !border-slate-200 !px-6 !py-3 !text-sm !font-bold !normal-case !text-slate-700"
+              >
+                Отмена
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleEditTour}
+                disabled={updateStatus === "loading"}
+                className="!rounded-2xl !bg-brand-500 !px-6 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600"
+              >
+                {updateStatus === "loading" ? "Сохраняем..." : "Сохранить"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Диалог подтверждения удаления */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          className: "!rounded-[28px] !bg-white !shadow-2xl",
+        }}
+      >
+        <DialogTitle className="!px-6 !pt-6 !text-xl !font-extrabold !tracking-tight !text-slate-950">
+          Удалить путёвку?
+        </DialogTitle>
+        <DialogContent className="!px-6 !pb-6 !pt-2">
+          <div className="space-y-5">
+            {deleteError ? <Alert severity="error">{deleteError}</Alert> : null}
+            <p className="text-sm font-medium text-slate-600">
+              Путёвка{" "}
+              <span className="font-bold text-slate-900">«{deletingTour?.name}»</span>{" "}
+              будет удалена безвозвратно.
+            </p>
+            <div className="flex gap-3 sm:justify-end">
+              <Button
+                variant="outlined"
+                onClick={handleCloseDeleteDialog}
+                disabled={deleteStatus === "loading"}
+                className="!rounded-2xl !border-slate-200 !px-5 !py-2.5 !text-sm !font-bold !normal-case !text-slate-700"
+              >
+                Отмена
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleDeleteTour}
+                disabled={deleteStatus === "loading"}
+                className="!rounded-2xl !bg-rose-500 !px-5 !py-2.5 !text-sm !font-bold !normal-case !shadow-none hover:!bg-rose-600"
+              >
+                {deleteStatus === "loading" ? "Удаляем..." : "Удалить"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={createDialogOpen}
