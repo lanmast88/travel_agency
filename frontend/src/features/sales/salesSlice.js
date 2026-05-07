@@ -5,6 +5,7 @@ const salesSlice = createSlice({
   name: "sales",
   initialState: salesData,
   reducers: {},
+  
 });
 
 export const salesReducer = salesSlice.reducer;

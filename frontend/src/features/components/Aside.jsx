@@ -2,24 +2,21 @@ import { useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
 import {
   AnalyticsIcon,
+  CatalogIcon,
   ClientsIcon,
   DashboardIcon,
   ReportsIcon,
   SalesIcon,
   TravelIcon,
+  UsersIcon,
 } from "../../shared/ui/Icons";
 
 const navigationItems = [
-  { label: "Дашборд", active: true, icon: DashboardIcon, path: "/" },
-  { label: "Путёвки", active: false, icon: TravelIcon, path: "/travels" },
-  { label: "Клиенты", active: false, icon: ClientsIcon, path: "/clients" },
-  {
-    label: "Продажи",
-    active: false,
-    badge: "10",
-    icon: SalesIcon,
-    path: "/sales",
-  },
+  { label: "Дашборд", icon: DashboardIcon, path: "/" },
+  { label: "Путёвки", icon: TravelIcon, path: "/travels" },
+  { label: "Справочники", icon: CatalogIcon, path: "/catalogs" },
+  { label: "Клиенты", icon: ClientsIcon, path: "/clients" },
+  { label: "Продажи", badge: "10", icon: SalesIcon, path: "/sales" },
 ];
 
 function Aside() {
@@ -80,6 +77,26 @@ function Aside() {
             ) : null}
           </NavLink>
         ))}
+        {(currentUser?.role === "admin" || currentUser?.role === "employee") && (
+          <>
+            <div className="px-3 text-xs font-bold uppercase tracking-[0.24em] text-slate-400">
+              Администрирование
+            </div>
+            <NavLink
+              to="/users"
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                  isActive
+                    ? "bg-brand-50 text-brand-600"
+                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                }`
+              }
+            >
+              <UsersIcon size={18} className="shrink-0" />
+              <span>Пользователи</span>
+            </NavLink>
+          </>
+        )}
         <div className="px-3 text-xs font-bold uppercase tracking-[0.24em] text-slate-400">
           Аналитика
         </div>

@@ -5,13 +5,15 @@ import {
   createBrowserRouter,
 } from "react-router-dom";
 import { AuthDialog } from "../features/auth/AuthDialog";
+import { CatalogsPage } from "../pages/CatalogsPage";
+import { ClientsPage } from "../pages/ClientsPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { ProfilePage } from "../pages/ProfilePage";
 import { RegisterPage } from "../pages/RegisterPage";
-import TravelsPage from "../pages/TravelsPage";
-import { ClientsPage } from "../pages/ClientsPage";
 import { ReportsPage } from "../pages/ReportsPage";
 import { SalesPage } from "../pages/SalesPage";
+import TravelsPage from "../pages/TravelsPage";
+import { UsersPage } from "../pages/UsersPage";
 
 function RootLayout() {
   return (
@@ -56,6 +58,10 @@ export const router = createBrowserRouter([
             element: <TravelsPage />,
           },
           {
+            path: "/catalogs",
+            element: <CatalogsPage />,
+          },
+          {
             path: "/clients",
             element: <ClientsPage />,
           },
@@ -66,6 +72,10 @@ export const router = createBrowserRouter([
           {
             path: "/reports",
             element: <ReportsPage />,
+          },
+          {
+            path: "/users",
+            element: <UsersPage />,
           },
         ],
       },

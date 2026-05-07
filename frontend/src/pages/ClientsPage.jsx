@@ -1,25 +1,34 @@
-import { Button } from "@mui/material";
-import { useSelector } from "react-redux";
+import {
+  Alert,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Aside from "../features/components/Aside";
-
-const discountToneMap = {
-  success: "bg-emerald-100 text-emerald-600",
-  neutral: "bg-slate-100 text-slate-400",
-};
+import {
+  clearCreateState,
+  clearDeleteState,
+  clearUpdateState,
+  createClient,
+  deleteClient,
+  fetchClients,
+  fetchClientsSummary,
+  setPage,
+  updateClient,
+} from "../features/clients/clientsSlice";
+import { http } from "../shared/api/http";
 
 function SearchIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="h-5 w-5 text-slate-400"
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-slate-400" aria-hidden="true">
       <path
-        d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15a7.5 7.5 0 0 1 0 15z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
+        d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
+        stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
       />
     </svg>
   );
@@ -28,148 +37,422 @@ function SearchIcon() {
 function PlusIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-      <path
-        d="M12 5v14M5 12h14"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }
 
-function ClientsSummaryIcon({ type }) {
-  if (type === "users") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
-        <path
-          d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M16 7a3 3 0 1 1 0 6M19 21v-2a4 4 0 0 0-3-3.85M12 7a4 4 0 1 1-8 0a4 4 0 0 1 8 0z"
-          stroke="currentColor"
-          strokeWidth="1.9"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  if (type === "star") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
-        <path
-          d="m12 3 2.78 5.63 6.22.91-4.5 4.39 1.06 6.2L12 17.2 6.44 20.13l1.06-6.2L3 9.54l6.22-.91L12 3Z"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  if (type === "plane") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
-        <path
-          d="m2 19 20-7-20-7 5 7-5 7Zm5-7h15"
-          stroke="currentColor"
-          strokeWidth="1.9"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
+function EditIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
-      <path
-        d="M12 5v14M5 12h14"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  );
-}
-
-function UserActionIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="h-[18px] w-[18px]"
-      aria-hidden="true"
-    >
-      <path
-        d="M20 21a8 8 0 1 0-16 0M12 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CardActionIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="h-[18px] w-[18px]"
-      aria-hidden="true"
-    >
-      <rect
-        x="3.5"
-        y="5.5"
-        width="17"
-        height="13"
-        rx="2.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M3.5 10.5h17"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function EditActionIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="h-[18px] w-[18px]"
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
       <path
         d="m4 20 4.2-1 9.5-9.5a2.12 2.12 0 0 0-3-3L5.2 16 4 20ZM13.5 7.5l3 3"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
       />
     </svg>
   );
 }
 
-function formatClientName(fullName) {
-  const parts = fullName.split(" ");
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+      <path
+        d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
+        stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
-  if (parts.length < 3) {
-    return fullName;
+const LOYALTY_LABELS = {
+  standard: "Стандарт",
+  bronze: "Бронза",
+  silver: "Серебро",
+  gold: "Золото ★",
+};
+
+const LOYALTY_CLASSES = {
+  standard: "bg-slate-100 text-slate-500",
+  bronze: "bg-amber-100 text-amber-700",
+  silver: "bg-slate-200 text-slate-600",
+  gold: "bg-yellow-100 text-yellow-700",
+};
+
+const AVATAR_PALETTE = [
+  "bg-brand-500", "bg-emerald-500", "bg-violet-500",
+  "bg-amber-500", "bg-rose-500", "bg-sky-600", "bg-teal-500", "bg-purple-500",
+];
+
+const LOYALTY_TABS = [
+  { id: "", label: "Все" },
+  { id: "standard", label: "Стандарт" },
+  { id: "bronze", label: "Бронза" },
+  { id: "silver", label: "Серебро" },
+  { id: "gold", label: "Золото" },
+];
+function getInitials(fullName) {
+  return fullName
+    .split(" ")
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function getAvatarColor(id) {
+  const n = id ? parseInt(id.replace(/-/g, "").slice(0, 8), 16) : 0;
+  return AVATAR_PALETTE[n % AVATAR_PALETTE.length];
+}
+
+function calcAge(birthDateStr) {
+  if (!birthDateStr) return 0;
+  const today = new Date();
+  const birth = new Date(birthDateStr);
+  let age = today.getFullYear() - birth.getFullYear();
+  if (
+    today.getMonth() < birth.getMonth() ||
+    (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())
+  ) age--;
+  return age;
+}
+
+function todayMinus(years) {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - years);
+  return d.toISOString().split("T")[0];
+}
+
+function validateClientForm(f) {
+  const e = {};
+  if (!f.full_name.trim() || f.full_name.trim().length < 2)
+    e.full_name = "Введите ФИО (минимум 2 символа)";
+  const cleanPhone = f.phone.replace(/[\s\-().]/g, "");
+  if (!cleanPhone) e.phone = "Введите телефон";
+  else if (!/^\+?\d{10,15}$/.test(cleanPhone)) e.phone = "Формат: +79001234567 (10–15 цифр)";
+  const cleanPassport = f.passport.replace(/\s/g, "");
+  if (!cleanPassport) e.passport = "Введите паспортные данные";
+  else if (!/^\d{10}$/.test(cleanPassport)) e.passport = "10 цифр: серия (4) + номер (6)";
+  if (!f.email.trim()) e.email = "Введите email";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) e.email = "Некорректный email";
+  if (!f.birth_date) e.birth_date = "Укажите дату рождения";
+  else {
+    const age = calcAge(f.birth_date);
+    if (age < 18) e.birth_date = "Клиент должен быть совершеннолетним (18+)";
+    if (age > 120) e.birth_date = "Некорректная дата рождения";
   }
+  return e;
+}
 
-  return `${parts[0]} ${parts[1]}\n${parts[2]}`;
+function Pagination({ page, pages, onPageChange }) {
+  if (pages <= 1) return null;
+  const nums = Array.from({ length: pages }, (_, i) => i + 1);
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
+      >‹</button>
+      {nums.map((n) => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onPageChange(n)}
+          className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold ${
+            n === page ? "bg-brand-500 text-white" : "border border-slate-200 text-slate-700"
+          }`}
+        >{n}</button>
+      ))}
+      <button
+        type="button"
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= pages}
+        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
+      >›</button>
+    </div>
+  );
+}
+
+
+const initialForm = { full_name: "", phone: "", passport: "", email: "", birth_date: "" };
+
+function ClientFormFields({ form, touched, errors, onChange, onBlur, loading }) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <CircularProgress size={32} />
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-4">
+      <TextField
+        fullWidth label="ФИО" name="full_name" value={form.full_name}
+        onChange={onChange} onBlur={onBlur}
+        error={Boolean(touched.full_name && errors.full_name)}
+        helperText={touched.full_name && errors.full_name ? errors.full_name : " "}
+        placeholder="Иванов Иван Иванович"
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField
+          fullWidth label="Телефон" name="phone" value={form.phone}
+          onChange={onChange} onBlur={onBlur}
+          error={Boolean(touched.phone && errors.phone)}
+          helperText={touched.phone && errors.phone ? errors.phone : " "}
+          placeholder="+79001234567"
+        />
+        <TextField
+          fullWidth label="Email" name="email" value={form.email} type="email"
+          onChange={onChange} onBlur={onBlur}
+          error={Boolean(touched.email && errors.email)}
+          helperText={touched.email && errors.email ? errors.email : " "}
+        />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField
+          fullWidth label="Паспорт" name="passport" value={form.passport}
+          onChange={onChange} onBlur={onBlur}
+          error={Boolean(touched.passport && errors.passport)}
+          helperText={touched.passport && errors.passport ? errors.passport : "Серия и номер, 10 цифр"}
+          placeholder="1234 567890"
+        />
+        <TextField
+          fullWidth label="Дата рождения" name="birth_date" value={form.birth_date}
+          type="date" onChange={onChange} onBlur={onBlur}
+          InputLabelProps={{ shrink: true }}
+          inputProps={{ max: todayMinus(18), min: todayMinus(120) }}
+          error={Boolean(touched.birth_date && errors.birth_date)}
+          helperText={touched.birth_date && errors.birth_date ? errors.birth_date : "Клиент должен быть 18+"}
+        />
+      </div>
+    </div>
+  );
+}
+
+function DeleteDialog({ open, name, status, error, onConfirm, onClose }) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth
+      PaperProps={{ className: "!rounded-[28px] !bg-white !shadow-2xl" }}>
+      <DialogTitle className="!px-6 !pt-6 !text-xl !font-extrabold !tracking-tight !text-slate-950">
+        Удалить клиента?
+      </DialogTitle>
+      <DialogContent className="!px-6 !pb-6 !pt-2">
+        <div className="space-y-5">
+          {error ? <Alert severity="error">{error}</Alert> : null}
+          <p className="text-sm font-medium text-slate-600">
+            Клиент <span className="font-bold text-slate-900">«{name}»</span> будет удалён безвозвратно.
+          </p>
+          <div className="flex gap-3 sm:justify-end">
+            <Button variant="outlined" onClick={onClose} disabled={status === "loading"}
+              className="!rounded-2xl !border-slate-200 !px-5 !py-2.5 !text-sm !font-bold !normal-case !text-slate-700">
+              Отмена
+            </Button>
+            <Button variant="contained" onClick={onConfirm} disabled={status === "loading"}
+              className="!rounded-2xl !bg-rose-500 !px-5 !py-2.5 !text-sm !font-bold !normal-case !shadow-none hover:!bg-rose-600">
+              {status === "loading" ? "Удаляем..." : "Удалить"}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SummaryCard({ label, value, colorClass, loading }) {
+  return (
+    <article className="rounded-[28px] border border-slate-200 bg-white px-6 py-5 shadow-sm shadow-slate-200/60">
+      <div className="flex items-center gap-4">
+        <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${colorClass}`}>
+          <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+            <path
+              d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M12 11a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"
+              stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <div>
+          {loading
+            ? <CircularProgress size={28} />
+            : <div className="text-4xl font-black tracking-tight text-slate-950">{value}</div>
+          }
+          <div className="mt-1 text-lg font-semibold text-slate-500">{label}</div>
+        </div>
+      </div>
+    </article>
+  );
 }
 
 export function ClientsPage() {
-  const clients = useSelector((state) => state.clients);
+  const dispatch = useDispatch();
+  const currentUser = useSelector((s) => s.auth.currentUser);
+  const {
+    clients, total, page, pages,
+    listStatus, listError,
+    summaryTotal, summaryWithDiscount, summaryVip, summaryStatus,
+    createStatus, createError,
+    updateStatus, updateError,
+    deleteStatus, deleteError,
+  } = useSelector((s) => s.clients);
+
+  const isStaff = currentUser?.role === "employee" || currentUser?.role === "admin";
+  const isAdmin = currentUser?.role === "admin";
+
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [loyaltyFilter, setLoyaltyFilter] = useState("");
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createForm, setCreateForm] = useState(initialForm);
+  const [createTouched, setCreateTouched] = useState({});
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState(initialForm);
+  const [editTouched, setEditTouched] = useState({});
+  const [editLoading, setEditLoading] = useState(false);
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletingClient, setDeletingClient] = useState(null);
+
+  const createErrors = useMemo(() => validateClientForm(createForm), [createForm]);
+  const editErrors = useMemo(() => validateClientForm(editForm), [editForm]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    dispatch(setPage(1));
+  }, [dispatch, loyaltyFilter, debouncedSearch]);
+
+  useEffect(() => {
+    dispatch(fetchClients({ page, loyaltyLevel: loyaltyFilter || null, search: debouncedSearch }));
+  }, [dispatch, page, loyaltyFilter, debouncedSearch]);
+
+  useEffect(() => {
+    dispatch(fetchClientsSummary());
+  }, [dispatch]);
+
+  function handlePageChange(p) {
+    if (p < 1 || p > pages || p === page) return;
+    dispatch(setPage(p));
+  }
+
+  function handleLoyaltyFilter(id) {
+    setLoyaltyFilter(id);
+  }
+
+  // Create
+  function openCreate() {
+    dispatch(clearCreateState());
+    setCreateForm(initialForm);
+    setCreateTouched({});
+    setCreateOpen(true);
+  }
+  function closeCreate() {
+    if (createStatus === "loading") return;
+    dispatch(clearCreateState());
+    setCreateOpen(false);
+  }
+  async function handleCreate() {
+    setCreateTouched({ full_name: true, phone: true, passport: true, email: true, birth_date: true });
+    if (Object.keys(createErrors).length > 0) return;
+    const result = await dispatch(createClient({
+      full_name: createForm.full_name.trim(),
+      phone: createForm.phone.trim(),
+      passport: createForm.passport.replace(/\s/g, ""),
+      email: createForm.email.trim(),
+      birth_date: createForm.birth_date,
+    }));
+    if (createClient.fulfilled.match(result)) {
+      dispatch(fetchClientsSummary());
+      closeCreate();
+    }
+  }
+
+  // Edit
+  async function openEdit(client) {
+    dispatch(clearUpdateState());
+    setEditTouched({});
+    setEditingId(client.id);
+    setEditForm(initialForm);
+    setEditLoading(true);
+    setEditOpen(true);
+    try {
+      const { data } = await http.get(`/v1/clients/${client.id}`);
+      setEditForm({
+        full_name: data.full_name,
+        phone: data.phone,
+        passport: data.passport.replace(/\s/g, ""),
+        email: data.email,
+        birth_date: data.birth_date,
+      });
+    } catch {
+    } finally {
+      setEditLoading(false);
+    }
+  }
+  function closeEdit() {
+    if (updateStatus === "loading") return;
+    dispatch(clearUpdateState());
+    setEditOpen(false);
+  }
+  async function handleEdit() {
+    setEditTouched({ full_name: true, phone: true, passport: true, email: true, birth_date: true });
+    if (Object.keys(editErrors).length > 0) return;
+    const result = await dispatch(updateClient({
+      id: editingId,
+      full_name: editForm.full_name.trim(),
+      phone: editForm.phone.trim(),
+      passport: editForm.passport.replace(/\s/g, ""),
+      email: editForm.email.trim(),
+      birth_date: editForm.birth_date,
+    }));
+    if (updateClient.fulfilled.match(result)) closeEdit();
+  }
+
+  // Delete
+  function openDelete(client) {
+    dispatch(clearDeleteState());
+    setDeletingClient({ id: client.id, name: client.full_name });
+    setDeleteOpen(true);
+  }
+  function closeDelete() {
+    if (deleteStatus === "loading") return;
+    dispatch(clearDeleteState());
+    setDeleteOpen(false);
+  }
+  async function handleDelete() {
+    if (!deletingClient) return;
+    const result = await dispatch(deleteClient(deletingClient.id));
+    if (deleteClient.fulfilled.match(result)) {
+      dispatch(fetchClientsSummary());
+      closeDelete();
+    }
+  }
+
+  const summaryLoading = summaryStatus !== "succeeded";
+
+  if (!isStaff) {
+    return (
+      <div className="min-h-screen bg-transparent text-slate-900">
+        <div className="mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8">
+          <div className="flex min-h-[calc(100vh-2rem)] overflow-hidden rounded-[32px] border border-white/70 bg-white/75 shadow-panel backdrop-blur">
+            <Aside />
+            <main className="flex flex-1 items-center justify-center px-8 py-12">
+              <div className="text-center">
+                <div className="text-2xl font-extrabold text-slate-900">Нет доступа</div>
+                <p className="mt-2 text-sm font-medium text-slate-500">
+                  Этот раздел доступен только сотрудникам и администраторам.
+                </p>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-transparent text-slate-900">
@@ -178,72 +461,70 @@ export function ClientsPage() {
           <Aside />
 
           <main className="min-w-0 flex-1 px-4 py-4 sm:px-6 lg:px-8">
+            {/* Header */}
             <header className="flex flex-col gap-4 border-b border-slate-200/80 px-6 py-6 xl:flex-row xl:items-center xl:justify-between lg:px-10">
-              <div className="min-w-0 flex flex-col gap-4 xl:flex-row xl:items-center xl:flex-1">
+              <div className="flex min-w-0 flex-col gap-4 xl:flex-1 xl:flex-row xl:items-center">
                 <h1 className="shrink-0 text-3xl font-extrabold tracking-tight text-slate-950">
                   Клиенты
                 </h1>
-
                 <label className="flex w-full max-w-[420px] min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm shadow-slate-200/40 xl:flex-1">
                   <SearchIcon />
                   <input
                     type="text"
-                    placeholder={clients.searchPlaceholder}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Поиск по имени, телефону, email..."
                     className="w-full bg-transparent text-base font-medium text-slate-700 outline-none placeholder:text-slate-400"
                   />
                 </label>
               </div>
-
               <Button
                 variant="contained"
-                className="!min-w-[220px] shrink-0 !rounded-2xl !bg-brand-500 !px-5 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600"
+                onClick={openCreate}
+                className="!min-w-[200px] shrink-0 !rounded-2xl !bg-brand-500 !px-5 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600"
               >
-                <span className="mr-2 inline-flex">
-                  <PlusIcon />
-                </span>
+                <span className="mr-2 inline-flex"><PlusIcon /></span>
                 Добавить клиента
               </Button>
             </header>
 
             <div className="space-y-6 px-6 py-7 lg:px-10 lg:py-8">
-              <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4 xl:grid-cols-2">
-                {clients.summary.map((item) => (
-                  <article
-                    key={item.id}
-                    className="rounded-[28px] border border-slate-200 bg-white px-6 py-5 shadow-sm shadow-slate-200/60"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${item.iconTone}`}
-                      >
-                        <ClientsSummaryIcon type={item.icon} />
-                      </div>
-                      <div>
-                        <div className="text-4xl font-black tracking-tight text-slate-950">
-                          {item.value}
-                        </div>
-                        <div className="mt-1 text-lg font-semibold text-slate-500">
-                          {item.label}
-                        </div>
-                      </div>
-                    </div>
-                  </article>
-                ))}
+              {/* Summary cards */}
+              <section className="grid gap-4 md:grid-cols-3">
+                <SummaryCard
+                  label="Всего клиентов"
+                  value={summaryTotal}
+                  colorClass="bg-brand-50 text-brand-500"
+                  loading={summaryLoading}
+                />
+                <SummaryCard
+                  label="Со скидкой"
+                  value={summaryWithDiscount}
+                  colorClass="bg-emerald-50 text-emerald-500"
+                  loading={summaryLoading}
+                />
+                <SummaryCard
+                  label="VIP (Золото)"
+                  value={summaryVip}
+                  colorClass="bg-yellow-50 text-yellow-600"
+                  loading={summaryLoading}
+                />
               </section>
 
+              {/* Clients table */}
               <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
+                {/* Table header with tabs */}
                 <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 xl:flex-row xl:items-center xl:justify-between">
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
-                    <div className="text-2xl font-extrabold tracking-tight">
-                      Список клиентов
-                    </div>
+                    <div className="text-2xl font-extrabold tracking-tight">Список клиентов</div>
                     <div className="flex flex-wrap items-center gap-2">
-                      {clients.tabs.map((tab) => (
+                      {LOYALTY_TABS.map((tab) => (
                         <button
                           key={tab.id}
                           type="button"
-                          className={`rounded-2xl border px-4 py-2 text-base font-bold transition ${
-                            tab.active
+                          onClick={() => handleLoyaltyFilter(tab.id)}
+                          className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
+                            loyaltyFilter === tab.id
                               ? "border-brand-200 bg-brand-50 text-brand-600"
                               : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700"
                           }`}
@@ -253,137 +534,180 @@ export function ClientsPage() {
                       ))}
                     </div>
                   </div>
-
-                  <div className="text-lg font-bold text-slate-500">
-                    {clients.totalClientsLabel}
+                  <div className="text-sm font-bold text-slate-500">
+                    {listStatus === "loading"
+                      ? <span className="inline-flex items-center gap-2"><CircularProgress size={14} />Загружаем...</span>
+                      : `${total} клиент${total === 1 ? "" : total >= 2 && total <= 4 ? "а" : "ов"}`
+                    }
                   </div>
                 </div>
 
+                {listError && (
+                  <div className="px-6 py-4"><Alert severity="error">{listError}</Alert></div>
+                )}
+
+                {/* Table */}
                 <div className="overflow-x-auto">
-                  <table className="min-w-[1120px] border-collapse">
+                  <table className="w-full min-w-[780px] border-collapse">
                     <thead className="bg-slate-50">
-                      <tr className="text-left text-sm uppercase tracking-[0.12em] text-slate-400">
-                        <th className="px-6 py-5">ФИО клиента</th>
-                        <th className="px-6 py-5">Телефон</th>
-                        <th className="px-6 py-5">Паспорт</th>
-                        <th className="px-6 py-5">Скидка</th>
-                        <th className="px-6 py-5">Текущая путёвка</th>
-                        <th className="px-6 py-5">Покупок</th>
-                        <th className="px-6 py-5">Действия</th>
+                      <tr className="text-left text-xs uppercase tracking-[0.1em] text-slate-400">
+                        <th className="px-6 py-4">Клиент</th>
+                        <th className="px-6 py-4">Телефон</th>
+                        <th className="px-6 py-4">Лояльность</th>
+                        <th className="px-6 py-4">Скидка</th>
+                        <th className="px-6 py-4">Покупок</th>
+                        <th className="px-6 py-4"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {clients.clients.map((client) => (
-                        <tr
-                          key={client.id}
-                          className={`border-t border-slate-100 align-top ${
-                            client.highlighted ? "bg-emerald-50/40" : "bg-white"
-                          }`}
-                        >
-                          <td className="px-6 py-5">
-                            <div className="flex items-center gap-4">
+                      {clients.map((client) => (
+                        <tr key={client.id} className="border-t border-slate-100 align-middle">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
                               <div
-                                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-black text-white ${client.avatarTone}`}
+                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-black text-white ${getAvatarColor(client.id)}`}
                               >
-                                {client.initials}
+                                {getInitials(client.full_name)}
                               </div>
                               <div>
-                                <div className="whitespace-pre-line text-[1.65rem] font-extrabold leading-tight tracking-tight text-slate-900">
-                                  {formatClientName(client.fullName)}
-                                </div>
-                                <div className="mt-2 text-base font-semibold text-slate-400">
-                                  {client.email}
-                                </div>
+                                <div className="text-sm font-bold text-slate-900">{client.full_name}</div>
+                                <div className="text-xs font-medium text-slate-400">{client.email}</div>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-5 text-xl font-bold leading-tight text-slate-800">
+                          <td className="px-6 py-4 text-sm font-semibold text-slate-700">
                             {client.phone}
                           </td>
-                          <td className="px-6 py-5 text-xl font-bold tracking-[0.06em] text-slate-500">
-                            {client.passportMasked}
-                          </td>
-                          <td className="px-6 py-5">
-                            <span
-                              className={`inline-flex rounded-full px-4 py-2 text-lg font-black ${discountToneMap[client.discountTone]}`}
-                            >
-                              {client.discount}
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${LOYALTY_CLASSES[client.loyalty_level]}`}>
+                              {LOYALTY_LABELS[client.loyalty_level]}
                             </span>
                           </td>
-                          <td className="px-6 py-5 text-xl font-bold text-brand-600">
-                            {client.currentTrip}
+                          <td className="px-6 py-4">
+                            {client.discount_pct > 0 ? (
+                              <span className="text-sm font-black text-emerald-600">
+                                -{client.discount_pct}%
+                              </span>
+                            ) : (
+                              <span className="text-sm text-slate-400">—</span>
+                            )}
                           </td>
-                          <td className="px-6 py-5 text-xl font-black text-slate-800">
-                            {client.purchases}
+                          <td className="px-6 py-4 text-sm font-black text-slate-800">
+                            {client.sales_count}
                           </td>
-                          <td className="px-6 py-5">
-                            <div className="flex items-center gap-2">
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-1">
                               <button
                                 type="button"
-                                className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm shadow-slate-200/40 transition hover:border-slate-300 hover:text-slate-700"
+                                onClick={() => openEdit(client)}
+                                className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-brand-600"
+                                title="Редактировать"
                               >
-                                <UserActionIcon />
+                                <EditIcon />
                               </button>
-                              <button
-                                type="button"
-                                className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm shadow-slate-200/40 transition hover:border-slate-300 hover:text-slate-700"
-                              >
-                                <CardActionIcon />
-                              </button>
-                              <button
-                                type="button"
-                                className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-amber-500 shadow-sm shadow-slate-200/40 transition hover:border-amber-200 hover:text-amber-600"
-                              >
-                                <EditActionIcon />
-                              </button>
+                              {isAdmin && (
+                                <button
+                                  type="button"
+                                  onClick={() => openDelete(client)}
+                                  className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+                                  title="Удалить"
+                                >
+                                  <TrashIcon />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
                       ))}
+                      {clients.length === 0 && listStatus !== "loading" && (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
+                            {search || loyaltyFilter ? "Клиенты не найдены. Попробуйте изменить фильтры." : "Клиентов пока нет."}
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
 
-                <div className="flex flex-col gap-4 border-t border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-lg font-semibold text-slate-500">
-                    {clients.resultLabel}
+                {/* Pagination */}
+                <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4">
+                  <div className="text-sm font-medium text-slate-500">
+                    {listStatus === "loading"
+                      ? <span className="inline-flex items-center gap-2"><CircularProgress size={16} />Загружаем...</span>
+                      : total > 0 ? `Показано ${clients.length} из ${total}` : ""
+                    }
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-lg font-bold text-slate-400 transition hover:border-slate-300 hover:text-slate-600"
-                    >
-                      ‹
-                    </button>
-
-                    {clients.pagination.pages.map((page) => (
-                      <button
-                        key={String(page)}
-                        type="button"
-                        className={`flex h-11 min-w-11 items-center justify-center rounded-xl border px-3 text-base font-bold transition ${
-                          page === clients.pagination.currentPage
-                            ? "border-brand-500 bg-brand-500 text-white"
-                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
-
-                    <button
-                      type="button"
-                      className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-lg font-bold text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
-                    >
-                      ›
-                    </button>
-                  </div>
+                  <Pagination page={page} pages={pages} onPageChange={handlePageChange} />
                 </div>
               </section>
             </div>
           </main>
         </div>
       </div>
+
+      {/* Create dialog */}
+      <Dialog open={createOpen} onClose={closeCreate} fullWidth maxWidth="sm"
+        PaperProps={{ className: "!rounded-[32px] !bg-white/95 !shadow-2xl" }}>
+        <DialogTitle className="!px-6 !pt-6 !text-2xl !font-extrabold !tracking-tight !text-slate-950">
+          Добавить клиента
+        </DialogTitle>
+        <DialogContent className="!px-6 !pb-7 !pt-4">
+          <div className="space-y-4">
+            {createError && <Alert severity="error">{createError}</Alert>}
+            <ClientFormFields
+              form={createForm} touched={createTouched} errors={createErrors}
+              onChange={(e) => setCreateForm((p) => ({ ...p, [e.target.name]: e.target.value }))}
+              onBlur={(e) => setCreateTouched((p) => ({ ...p, [e.target.name]: true }))}
+            />
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outlined" onClick={closeCreate} disabled={createStatus === "loading"}
+                className="!rounded-2xl !border-slate-200 !px-6 !py-3 !text-sm !font-bold !normal-case !text-slate-700">
+                Отмена
+              </Button>
+              <Button variant="contained" onClick={handleCreate} disabled={createStatus === "loading"}
+                className="!rounded-2xl !bg-brand-500 !px-6 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600">
+                {createStatus === "loading" ? "Создаём..." : "Создать"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit dialog */}
+      <Dialog open={editOpen} onClose={closeEdit} fullWidth maxWidth="sm"
+        PaperProps={{ className: "!rounded-[32px] !bg-white/95 !shadow-2xl" }}>
+        <DialogTitle className="!px-6 !pt-6 !text-2xl !font-extrabold !tracking-tight !text-slate-950">
+          Редактировать клиента
+        </DialogTitle>
+        <DialogContent className="!px-6 !pb-7 !pt-4">
+          <div className="space-y-4">
+            {updateError && <Alert severity="error">{updateError}</Alert>}
+            <ClientFormFields
+              form={editForm} touched={editTouched} errors={editErrors} loading={editLoading}
+              onChange={(e) => setEditForm((p) => ({ ...p, [e.target.name]: e.target.value }))}
+              onBlur={(e) => setEditTouched((p) => ({ ...p, [e.target.name]: true }))}
+            />
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outlined" onClick={closeEdit} disabled={updateStatus === "loading" || editLoading}
+                className="!rounded-2xl !border-slate-200 !px-6 !py-3 !text-sm !font-bold !normal-case !text-slate-700">
+                Отмена
+              </Button>
+              <Button variant="contained" onClick={handleEdit}
+                disabled={updateStatus === "loading" || editLoading}
+                className="!rounded-2xl !bg-brand-500 !px-6 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600">
+                {updateStatus === "loading" ? "Сохраняем..." : "Сохранить"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <DeleteDialog
+        open={deleteOpen} name={deletingClient?.name}
+        status={deleteStatus} error={deleteError}
+        onConfirm={handleDelete} onClose={closeDelete}
+      />
     </div>
   );
 }

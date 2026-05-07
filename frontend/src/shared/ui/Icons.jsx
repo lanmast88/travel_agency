@@ -116,6 +116,27 @@ export function LossIcon(props) {
   );
 }
 
+export function CatalogIcon(props) {
+  return (
+    <IconBase viewBox="0 0 24 24" fill="none" {...props}>
+      <path d="M4 6h16M4 10h16M4 14h8M4 18h8" strokeLinecap="round" />
+      <circle cx="18" cy="16" r="3" />
+      <path d="m21 19 1.5 1.5" strokeLinecap="round" />
+    </IconBase>
+  );
+}
+
+export function UsersIcon(props) {
+  return (
+    <IconBase viewBox="0 0 24 24" fill="none" {...props}>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M19 8v6M22 11h-6" strokeLinecap="round" />
+    </IconBase>
+  );
+}
+
 export function AnalyticsIcon(props) {
   return (
     <IconBase viewBox="0 0 24 24" fill="none" {...props}>
