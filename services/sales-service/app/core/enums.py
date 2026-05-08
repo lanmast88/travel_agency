@@ -26,3 +26,18 @@ class UserRole(str, PyEnum):
     user = "user"
     employee = "employee"
     admin = "admin"
+
+
+class SaleSortField(str, PyEnum):
+    """Поля для сортировки списка продаж."""
+
+    sale_date = "sale_date"
+    final_price = "final_price"
+    created_at = "created_at"
+
+
+class SortOrder(str, PyEnum):
+    """Направление сортировки."""
+
+    asc = "asc"
+    desc = "desc"
