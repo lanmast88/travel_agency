@@ -17,6 +17,7 @@ from app.core.exceptions import (
     SaleCancelledError,
 )
 from app.kafka_producer import close_producer, init_producer, is_producer_running
+from app.routers.sales import router as sales_router
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,7 @@ def _create_app() -> FastAPI:
     )
 
     _register_exception_handlers(app)
+    app.include_router(sales_router)
 
     return app
 
