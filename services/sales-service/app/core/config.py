@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     db_max_overflow: int = 20
     db_echo: bool = False
 
+    # HTTP — межсервисные вызовы
+    client_service_url: str = "http://localhost:8001"
+
     # Kafka Producer — публикует sale_created в client-service для обновления лояльности
     kafka_bootstrap_servers: list[str] = ["localhost:9092"]
     kafka_sale_created_topic: str = "sale_created"

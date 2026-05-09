@@ -132,7 +132,14 @@ def require_role(
     return dependency
 
 
+async def get_raw_token(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(_bearer)],
+) -> str:
+    return credentials.credentials
+
+
 DbSession = Annotated[AsyncSession, Depends(get_db)]
 CurrentEmployee = Annotated[TokenPayload, Depends(get_current_employee)]
 ManagerUser = Annotated[TokenPayload, Depends(require_role(UserRole.employee, UserRole.admin))]
 AdminUser = Annotated[TokenPayload, Depends(require_role(UserRole.admin))]
+RawToken = Annotated[str, Depends(get_raw_token)]
