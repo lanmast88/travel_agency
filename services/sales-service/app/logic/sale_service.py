@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from app.core.exceptions import NotFoundError, SaleCancelledError
@@ -9,6 +10,8 @@ from app.repositories.audit_log import AuditLogRepository
 from app.repositories.sale import SaleRepository
 from app.schemas.common import PaginationParams
 from app.schemas.sale import SaleCreate, SaleFilters
+
+logger = logging.getLogger(__name__)
 
 
 class SaleService:
@@ -55,6 +58,10 @@ class SaleService:
             final_price=sale.final_price,
             sale_date=sale.sale_date,
         )
+        logger.info(
+            "продажа создана",
+            extra={"employee_id": str(employee_id), "sale_id": str(sale.id)},
+        )
         return sale
 
     async def cancel_sale(
@@ -77,6 +84,10 @@ class SaleService:
             entity="sale",
             entity_id=sale.id,
             ip_address=ip_address,
+        )
+        logger.info(
+            "продажа отменена",
+            extra={"employee_id": str(employee_id), "sale_id": str(sale_id)},
         )
         return sale
 

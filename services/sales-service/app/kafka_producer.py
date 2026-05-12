@@ -65,4 +65,7 @@ async def publish_sale_created(
     }
 
     await _producer.send_and_wait(settings.kafka_sale_created_topic, payload)
-    logger.info("sale_created опубликован: sale_id=%s client_id=%s", sale_id, client_id)
+    logger.info(
+        "sale_created опубликован",
+        extra={"sale_id": str(sale_id), "employee_id": str(employee_id)},
+    )

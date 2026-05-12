@@ -16,8 +16,12 @@ from app.core.exceptions import (
     NotFoundError,
     SaleCancelledError,
 )
+from app.core.logging_config import setup_logging
+from app.core.middleware import TraceIDMiddleware
 from app.kafka_producer import close_producer, init_producer, is_producer_running
 from app.routers.sales import router as sales_router
+
+setup_logging()
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +72,7 @@ def _create_app() -> FastAPI:
         allow_methods=_CORS_ALLOW_METHODS,
         allow_headers=_CORS_ALLOW_HEADERS,
     )
+    app.add_middleware(TraceIDMiddleware)
 
     _register_exception_handlers(app)
     app.include_router(sales_router)
