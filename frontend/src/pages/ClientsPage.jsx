@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Aside from "../features/components/Aside";
 import {
   clearCreateState,
@@ -284,6 +285,7 @@ function SummaryCard({ label, value, colorClass, loading }) {
 
 export function ClientsPage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const currentUser = useSelector((s) => s.auth.currentUser);
   const {
     clients, total, page, pages,
@@ -569,10 +571,14 @@ export function ClientsPage() {
                               >
                                 {getInitials(client.full_name)}
                               </div>
-                              <div>
-                                <div className="text-sm font-bold text-slate-900">{client.full_name}</div>
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/clients/${client.id}`)}
+                                className="text-left"
+                              >
+                                <div className="text-sm font-bold text-slate-900 hover:text-brand-600 hover:underline transition-colors">{client.full_name}</div>
                                 <div className="text-xs font-medium text-slate-400">{client.email}</div>
-                              </div>
+                              </button>
                             </div>
                           </td>
                           <td className="px-6 py-4 text-sm font-semibold text-slate-700">

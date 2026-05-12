@@ -6,12 +6,15 @@ import {
 } from "react-router-dom";
 import { AuthDialog } from "../features/auth/AuthDialog";
 import { CatalogsPage } from "../pages/CatalogsPage";
+import { ClientDetailPage } from "../pages/ClientDetailPage";
 import { ClientsPage } from "../pages/ClientsPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { ProfilePage } from "../pages/ProfilePage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { ReportsPage } from "../pages/ReportsPage";
+import { SaleDetailPage } from "../pages/SaleDetailPage";
 import { SalesPage } from "../pages/SalesPage";
+import { TourDetailPage } from "../pages/TourDetailPage";
 import TravelsPage from "../pages/TravelsPage";
 import { UsersPage } from "../pages/UsersPage";
 
@@ -58,6 +61,10 @@ export const router = createBrowserRouter([
             element: <TravelsPage />,
           },
           {
+            path: "/travels/:id",
+            element: <TourDetailPage />,
+          },
+          {
             path: "/catalogs",
             element: <CatalogsPage />,
           },
@@ -66,8 +73,16 @@ export const router = createBrowserRouter([
             element: <ClientsPage />,
           },
           {
+            path: "/clients/:id",
+            element: <ClientDetailPage />,
+          },
+          {
             path: "/sales",
             element: <SalesPage />,
+          },
+          {
+            path: "/sales/:id",
+            element: <SaleDetailPage />,
           },
           {
             path: "/reports",

@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Aside from "../features/components/Aside";
 import {
   clearCreateTourState,
@@ -226,6 +227,7 @@ const initialTourForm = {
 
 function TravelsPage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const currentUser = useSelector((state) => state.auth.currentUser);
   const isStaff = currentUser?.role === "employee" || currentUser?.role === "admin";
   const isAdmin = currentUser?.role === "admin";
@@ -784,7 +786,13 @@ function TravelsPage() {
                           }`}
                         >
                           <td className="px-5 py-5 text-base font-extrabold leading-tight text-slate-900">
-                            {tour.name}
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/travels/${tour.id}`)}
+                              className="text-left hover:text-brand-600 hover:underline transition-colors"
+                            >
+                              {tour.name}
+                            </button>
                           </td>
                           <td className="px-5 py-5">
                             <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
