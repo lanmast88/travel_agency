@@ -75,7 +75,7 @@ def _create_app() -> FastAPI:
     app.add_middleware(TraceIDMiddleware)
 
     _register_exception_handlers(app)
-    app.include_router(sales_router)
+    app.include_router(sales_router, prefix="/api/v1")
 
     return app
 
