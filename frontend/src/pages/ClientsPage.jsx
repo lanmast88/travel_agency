@@ -26,10 +26,17 @@ import { http } from "../shared/api/http";
 
 function SearchIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-slate-400" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className="h-5 w-5 text-slate-400"
+      aria-hidden="true"
+    >
       <path
         d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
-        stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
       />
     </svg>
   );
@@ -38,7 +45,12 @@ function SearchIcon() {
 function PlusIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M12 5v14M5 12h14"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -48,7 +60,10 @@ function EditIcon() {
     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
       <path
         d="m4 20 4.2-1 9.5-9.5a2.12 2.12 0 0 0-3-3L5.2 16 4 20ZM13.5 7.5l3 3"
-        stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -59,7 +74,10 @@ function TrashIcon() {
     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
       <path
         d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
-        stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -80,8 +98,14 @@ const LOYALTY_CLASSES = {
 };
 
 const AVATAR_PALETTE = [
-  "bg-brand-500", "bg-emerald-500", "bg-violet-500",
-  "bg-amber-500", "bg-rose-500", "bg-sky-600", "bg-teal-500", "bg-purple-500",
+  "bg-brand-500",
+  "bg-emerald-500",
+  "bg-violet-500",
+  "bg-amber-500",
+  "bg-rose-500",
+  "bg-sky-600",
+  "bg-teal-500",
+  "bg-purple-500",
 ];
 
 const LOYALTY_TABS = [
@@ -112,7 +136,8 @@ function calcAge(birthDateStr) {
   if (
     today.getMonth() < birth.getMonth() ||
     (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())
-  ) age--;
+  )
+    age--;
   return age;
 }
 
@@ -128,12 +153,15 @@ function validateClientForm(f) {
     e.full_name = "Введите ФИО (минимум 2 символа)";
   const cleanPhone = f.phone.replace(/[\s\-().]/g, "");
   if (!cleanPhone) e.phone = "Введите телефон";
-  else if (!/^\+?\d{10,15}$/.test(cleanPhone)) e.phone = "Формат: +79001234567 (10–15 цифр)";
+  else if (!/^\+?\d{10,15}$/.test(cleanPhone))
+    e.phone = "Формат: +79001234567 (10–15 цифр)";
   const cleanPassport = f.passport.replace(/\s/g, "");
   if (!cleanPassport) e.passport = "Введите паспортные данные";
-  else if (!/^\d{10}$/.test(cleanPassport)) e.passport = "10 цифр: серия (4) + номер (6)";
+  else if (!/^\d{10}$/.test(cleanPassport))
+    e.passport = "10 цифр: серия (4) + номер (6)";
   if (!f.email.trim()) e.email = "Введите email";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) e.email = "Некорректный email";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email))
+    e.email = "Некорректный email";
   if (!f.birth_date) e.birth_date = "Укажите дату рождения";
   else {
     const age = calcAge(f.birth_date);
@@ -153,31 +181,51 @@ function Pagination({ page, pages, onPageChange }) {
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-      >‹</button>
+      >
+        ‹
+      </button>
       {nums.map((n) => (
         <button
           key={n}
           type="button"
           onClick={() => onPageChange(n)}
           className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold ${
-            n === page ? "bg-brand-500 text-white" : "border border-slate-200 text-slate-700"
+            n === page
+              ? "bg-brand-500 text-white"
+              : "border border-slate-200 text-slate-700"
           }`}
-        >{n}</button>
+        >
+          {n}
+        </button>
       ))}
       <button
         type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= pages}
         className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-      >›</button>
+      >
+        ›
+      </button>
     </div>
   );
 }
 
+const initialForm = {
+  full_name: "",
+  phone: "",
+  passport: "",
+  email: "",
+  birth_date: "",
+};
 
-const initialForm = { full_name: "", phone: "", passport: "", email: "", birth_date: "" };
-
-function ClientFormFields({ form, touched, errors, onChange, onBlur, loading }) {
+function ClientFormFields({
+  form,
+  touched,
+  errors,
+  onChange,
+  onBlur,
+  loading,
+}) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -188,42 +236,74 @@ function ClientFormFields({ form, touched, errors, onChange, onBlur, loading }) 
   return (
     <div className="space-y-4">
       <TextField
-        fullWidth label="ФИО" name="full_name" value={form.full_name}
-        onChange={onChange} onBlur={onBlur}
+        fullWidth
+        label="ФИО"
+        name="full_name"
+        value={form.full_name}
+        onChange={onChange}
+        onBlur={onBlur}
         error={Boolean(touched.full_name && errors.full_name)}
-        helperText={touched.full_name && errors.full_name ? errors.full_name : " "}
+        helperText={
+          touched.full_name && errors.full_name ? errors.full_name : " "
+        }
         placeholder="Иванов Иван Иванович"
       />
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField
-          fullWidth label="Телефон" name="phone" value={form.phone}
-          onChange={onChange} onBlur={onBlur}
+          fullWidth
+          label="Телефон"
+          name="phone"
+          value={form.phone}
+          onChange={onChange}
+          onBlur={onBlur}
           error={Boolean(touched.phone && errors.phone)}
           helperText={touched.phone && errors.phone ? errors.phone : " "}
           placeholder="+79001234567"
         />
         <TextField
-          fullWidth label="Email" name="email" value={form.email} type="email"
-          onChange={onChange} onBlur={onBlur}
+          fullWidth
+          label="Email"
+          name="email"
+          value={form.email}
+          type="email"
+          onChange={onChange}
+          onBlur={onBlur}
           error={Boolean(touched.email && errors.email)}
           helperText={touched.email && errors.email ? errors.email : " "}
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField
-          fullWidth label="Паспорт" name="passport" value={form.passport}
-          onChange={onChange} onBlur={onBlur}
+          fullWidth
+          label="Паспорт"
+          name="passport"
+          value={form.passport}
+          onChange={onChange}
+          onBlur={onBlur}
           error={Boolean(touched.passport && errors.passport)}
-          helperText={touched.passport && errors.passport ? errors.passport : "Серия и номер, 10 цифр"}
+          helperText={
+            touched.passport && errors.passport
+              ? errors.passport
+              : "Серия и номер, 10 цифр"
+          }
           placeholder="1234 567890"
         />
         <TextField
-          fullWidth label="Дата рождения" name="birth_date" value={form.birth_date}
-          type="date" onChange={onChange} onBlur={onBlur}
+          fullWidth
+          label=""
+          name="birth_date"
+          value={form.birth_date}
+          type="date"
+          onChange={onChange}
+          onBlur={onBlur}
           InputLabelProps={{ shrink: true }}
           inputProps={{ max: todayMinus(18), min: todayMinus(120) }}
           error={Boolean(touched.birth_date && errors.birth_date)}
-          helperText={touched.birth_date && errors.birth_date ? errors.birth_date : "Клиент должен быть 18+"}
+          helperText={
+            touched.birth_date && errors.birth_date
+              ? errors.birth_date
+              : "Клиент должен быть 18+"
+          }
         />
       </div>
     </div>
@@ -232,8 +312,13 @@ function ClientFormFields({ form, touched, errors, onChange, onBlur, loading }) 
 
 function DeleteDialog({ open, name, status, error, onConfirm, onClose }) {
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth
-      PaperProps={{ className: "!rounded-[28px] !bg-white !shadow-2xl" }}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xs"
+      fullWidth
+      PaperProps={{ className: "!rounded-[28px] !bg-white !shadow-2xl" }}
+    >
       <DialogTitle className="!px-6 !pt-6 !text-xl !font-extrabold !tracking-tight !text-slate-950">
         Удалить клиента?
       </DialogTitle>
@@ -241,15 +326,24 @@ function DeleteDialog({ open, name, status, error, onConfirm, onClose }) {
         <div className="space-y-5">
           {error ? <Alert severity="error">{error}</Alert> : null}
           <p className="text-sm font-medium text-slate-600">
-            Клиент <span className="font-bold text-slate-900">«{name}»</span> будет удалён безвозвратно.
+            Клиент <span className="font-bold text-slate-900">«{name}»</span>{" "}
+            будет удалён безвозвратно.
           </p>
           <div className="flex gap-3 sm:justify-end">
-            <Button variant="outlined" onClick={onClose} disabled={status === "loading"}
-              className="!rounded-2xl !border-slate-200 !px-5 !py-2.5 !text-sm !font-bold !normal-case !text-slate-700">
+            <Button
+              variant="outlined"
+              onClick={onClose}
+              disabled={status === "loading"}
+              className="!rounded-2xl !border-slate-200 !px-5 !py-2.5 !text-sm !font-bold !normal-case !text-slate-700"
+            >
               Отмена
             </Button>
-            <Button variant="contained" onClick={onConfirm} disabled={status === "loading"}
-              className="!rounded-2xl !bg-rose-500 !px-5 !py-2.5 !text-sm !font-bold !normal-case !shadow-none hover:!bg-rose-600">
+            <Button
+              variant="contained"
+              onClick={onConfirm}
+              disabled={status === "loading"}
+              className="!rounded-2xl !bg-rose-500 !px-5 !py-2.5 !text-sm !font-bold !normal-case !shadow-none hover:!bg-rose-600"
+            >
               {status === "loading" ? "Удаляем..." : "Удалить"}
             </Button>
           </div>
@@ -263,20 +357,35 @@ function SummaryCard({ label, value, colorClass, loading }) {
   return (
     <article className="rounded-[28px] border border-slate-200 bg-white px-6 py-5 shadow-sm shadow-slate-200/60">
       <div className="flex items-center gap-4">
-        <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${colorClass}`}>
-          <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+        <div
+          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${colorClass}`}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            className="h-6 w-6"
+            aria-hidden="true"
+          >
             <path
               d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M12 11a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"
-              stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"
+              stroke="currentColor"
+              strokeWidth="1.9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
         </div>
         <div>
-          {loading
-            ? <CircularProgress size={28} />
-            : <div className="text-4xl font-black tracking-tight text-slate-950">{value}</div>
-          }
-          <div className="mt-1 text-lg font-semibold text-slate-500">{label}</div>
+          {loading ? (
+            <CircularProgress size={28} />
+          ) : (
+            <div className="text-4xl font-black tracking-tight text-slate-950">
+              {value}
+            </div>
+          )}
+          <div className="mt-1 text-lg font-semibold text-slate-500">
+            {label}
+          </div>
         </div>
       </div>
     </article>
@@ -288,15 +397,26 @@ export function ClientsPage() {
   const navigate = useNavigate();
   const currentUser = useSelector((s) => s.auth.currentUser);
   const {
-    clients, total, page, pages,
-    listStatus, listError,
-    summaryTotal, summaryWithDiscount, summaryVip, summaryStatus,
-    createStatus, createError,
-    updateStatus, updateError,
-    deleteStatus, deleteError,
+    clients,
+    total,
+    page,
+    pages,
+    listStatus,
+    listError,
+    summaryTotal,
+    summaryWithDiscount,
+    summaryVip,
+    summaryStatus,
+    createStatus,
+    createError,
+    updateStatus,
+    updateError,
+    deleteStatus,
+    deleteError,
   } = useSelector((s) => s.clients);
 
-  const isStaff = currentUser?.role === "employee" || currentUser?.role === "admin";
+  const isStaff =
+    currentUser?.role === "employee" || currentUser?.role === "admin";
   const isAdmin = currentUser?.role === "admin";
 
   const [search, setSearch] = useState("");
@@ -316,7 +436,10 @@ export function ClientsPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingClient, setDeletingClient] = useState(null);
 
-  const createErrors = useMemo(() => validateClientForm(createForm), [createForm]);
+  const createErrors = useMemo(
+    () => validateClientForm(createForm),
+    [createForm],
+  );
   const editErrors = useMemo(() => validateClientForm(editForm), [editForm]);
 
   useEffect(() => {
@@ -329,7 +452,13 @@ export function ClientsPage() {
   }, [dispatch, loyaltyFilter, debouncedSearch]);
 
   useEffect(() => {
-    dispatch(fetchClients({ page, loyaltyLevel: loyaltyFilter || null, search: debouncedSearch }));
+    dispatch(
+      fetchClients({
+        page,
+        loyaltyLevel: loyaltyFilter || null,
+        search: debouncedSearch,
+      }),
+    );
   }, [dispatch, page, loyaltyFilter, debouncedSearch]);
 
   useEffect(() => {
@@ -358,15 +487,23 @@ export function ClientsPage() {
     setCreateOpen(false);
   }
   async function handleCreate() {
-    setCreateTouched({ full_name: true, phone: true, passport: true, email: true, birth_date: true });
+    setCreateTouched({
+      full_name: true,
+      phone: true,
+      passport: true,
+      email: true,
+      birth_date: true,
+    });
     if (Object.keys(createErrors).length > 0) return;
-    const result = await dispatch(createClient({
-      full_name: createForm.full_name.trim(),
-      phone: createForm.phone.trim(),
-      passport: createForm.passport.replace(/\s/g, ""),
-      email: createForm.email.trim(),
-      birth_date: createForm.birth_date,
-    }));
+    const result = await dispatch(
+      createClient({
+        full_name: createForm.full_name.trim(),
+        phone: createForm.phone.trim(),
+        passport: createForm.passport.replace(/\s/g, ""),
+        email: createForm.email.trim(),
+        birth_date: createForm.birth_date,
+      }),
+    );
     if (createClient.fulfilled.match(result)) {
       dispatch(fetchClientsSummary());
       closeCreate();
@@ -401,16 +538,24 @@ export function ClientsPage() {
     setEditOpen(false);
   }
   async function handleEdit() {
-    setEditTouched({ full_name: true, phone: true, passport: true, email: true, birth_date: true });
+    setEditTouched({
+      full_name: true,
+      phone: true,
+      passport: true,
+      email: true,
+      birth_date: true,
+    });
     if (Object.keys(editErrors).length > 0) return;
-    const result = await dispatch(updateClient({
-      id: editingId,
-      full_name: editForm.full_name.trim(),
-      phone: editForm.phone.trim(),
-      passport: editForm.passport.replace(/\s/g, ""),
-      email: editForm.email.trim(),
-      birth_date: editForm.birth_date,
-    }));
+    const result = await dispatch(
+      updateClient({
+        id: editingId,
+        full_name: editForm.full_name.trim(),
+        phone: editForm.phone.trim(),
+        passport: editForm.passport.replace(/\s/g, ""),
+        email: editForm.email.trim(),
+        birth_date: editForm.birth_date,
+      }),
+    );
     if (updateClient.fulfilled.match(result)) closeEdit();
   }
 
@@ -444,7 +589,9 @@ export function ClientsPage() {
             <Aside />
             <main className="flex flex-1 items-center justify-center px-8 py-12">
               <div className="text-center">
-                <div className="text-2xl font-extrabold text-slate-900">Нет доступа</div>
+                <div className="text-2xl font-extrabold text-slate-900">
+                  Нет доступа
+                </div>
                 <p className="mt-2 text-sm font-medium text-slate-500">
                   Этот раздел доступен только сотрудникам и администраторам.
                 </p>
@@ -485,7 +632,9 @@ export function ClientsPage() {
                 onClick={openCreate}
                 className="!min-w-[200px] shrink-0 !rounded-2xl !bg-brand-500 !px-5 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600"
               >
-                <span className="mr-2 inline-flex"><PlusIcon /></span>
+                <span className="mr-2 inline-flex">
+                  <PlusIcon />
+                </span>
                 Добавить клиента
               </Button>
             </header>
@@ -518,7 +667,9 @@ export function ClientsPage() {
                 {/* Table header with tabs */}
                 <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 xl:flex-row xl:items-center xl:justify-between">
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
-                    <div className="text-2xl font-extrabold tracking-tight">Список клиентов</div>
+                    <div className="text-2xl font-extrabold tracking-tight">
+                      Список клиентов
+                    </div>
                     <div className="flex flex-wrap items-center gap-2">
                       {LOYALTY_TABS.map((tab) => (
                         <button
@@ -537,15 +688,21 @@ export function ClientsPage() {
                     </div>
                   </div>
                   <div className="text-sm font-bold text-slate-500">
-                    {listStatus === "loading"
-                      ? <span className="inline-flex items-center gap-2"><CircularProgress size={14} />Загружаем...</span>
-                      : `${total} клиент${total === 1 ? "" : total >= 2 && total <= 4 ? "а" : "ов"}`
-                    }
+                    {listStatus === "loading" ? (
+                      <span className="inline-flex items-center gap-2">
+                        <CircularProgress size={14} />
+                        Загружаем...
+                      </span>
+                    ) : (
+                      `${total} клиент${total === 1 ? "" : total >= 2 && total <= 4 ? "а" : "ов"}`
+                    )}
                   </div>
                 </div>
 
                 {listError && (
-                  <div className="px-6 py-4"><Alert severity="error">{listError}</Alert></div>
+                  <div className="px-6 py-4">
+                    <Alert severity="error">{listError}</Alert>
+                  </div>
                 )}
 
                 {/* Table */}
@@ -563,7 +720,10 @@ export function ClientsPage() {
                     </thead>
                     <tbody>
                       {clients.map((client) => (
-                        <tr key={client.id} className="border-t border-slate-100 align-middle">
+                        <tr
+                          key={client.id}
+                          className="border-t border-slate-100 align-middle"
+                        >
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div
@@ -573,11 +733,17 @@ export function ClientsPage() {
                               </div>
                               <button
                                 type="button"
-                                onClick={() => navigate(`/clients/${client.id}`)}
+                                onClick={() =>
+                                  navigate(`/clients/${client.id}`)
+                                }
                                 className="text-left"
                               >
-                                <div className="text-sm font-bold text-slate-900 hover:text-brand-600 hover:underline transition-colors">{client.full_name}</div>
-                                <div className="text-xs font-medium text-slate-400">{client.email}</div>
+                                <div className="text-sm font-bold text-slate-900 hover:text-brand-600 hover:underline transition-colors">
+                                  {client.full_name}
+                                </div>
+                                <div className="text-xs font-medium text-slate-400">
+                                  {client.email}
+                                </div>
                               </button>
                             </div>
                           </td>
@@ -585,7 +751,9 @@ export function ClientsPage() {
                             {client.phone}
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${LOYALTY_CLASSES[client.loyalty_level]}`}>
+                            <span
+                              className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${LOYALTY_CLASSES[client.loyalty_level]}`}
+                            >
                               {LOYALTY_LABELS[client.loyalty_level]}
                             </span>
                           </td>
@@ -627,8 +795,13 @@ export function ClientsPage() {
                       ))}
                       {clients.length === 0 && listStatus !== "loading" && (
                         <tr>
-                          <td colSpan={6} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
-                            {search || loyaltyFilter ? "Клиенты не найдены. Попробуйте изменить фильтры." : "Клиентов пока нет."}
+                          <td
+                            colSpan={6}
+                            className="px-6 py-10 text-center text-sm font-semibold text-slate-500"
+                          >
+                            {search || loyaltyFilter
+                              ? "Клиенты не найдены. Попробуйте изменить фильтры."
+                              : "Клиентов пока нет."}
                           </td>
                         </tr>
                       )}
@@ -639,12 +812,22 @@ export function ClientsPage() {
                 {/* Pagination */}
                 <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4">
                   <div className="text-sm font-medium text-slate-500">
-                    {listStatus === "loading"
-                      ? <span className="inline-flex items-center gap-2"><CircularProgress size={16} />Загружаем...</span>
-                      : total > 0 ? `Показано ${clients.length} из ${total}` : ""
-                    }
+                    {listStatus === "loading" ? (
+                      <span className="inline-flex items-center gap-2">
+                        <CircularProgress size={16} />
+                        Загружаем...
+                      </span>
+                    ) : total > 0 ? (
+                      `Показано ${clients.length} из ${total}`
+                    ) : (
+                      ""
+                    )}
                   </div>
-                  <Pagination page={page} pages={pages} onPageChange={handlePageChange} />
+                  <Pagination
+                    page={page}
+                    pages={pages}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
               </section>
             </div>
@@ -653,8 +836,13 @@ export function ClientsPage() {
       </div>
 
       {/* Create dialog */}
-      <Dialog open={createOpen} onClose={closeCreate} fullWidth maxWidth="sm"
-        PaperProps={{ className: "!rounded-[32px] !bg-white/95 !shadow-2xl" }}>
+      <Dialog
+        open={createOpen}
+        onClose={closeCreate}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ className: "!rounded-[32px] !bg-white/95 !shadow-2xl" }}
+      >
         <DialogTitle className="!px-6 !pt-6 !text-2xl !font-extrabold !tracking-tight !text-slate-950">
           Добавить клиента
         </DialogTitle>
@@ -662,17 +850,34 @@ export function ClientsPage() {
           <div className="space-y-4">
             {createError && <Alert severity="error">{createError}</Alert>}
             <ClientFormFields
-              form={createForm} touched={createTouched} errors={createErrors}
-              onChange={(e) => setCreateForm((p) => ({ ...p, [e.target.name]: e.target.value }))}
-              onBlur={(e) => setCreateTouched((p) => ({ ...p, [e.target.name]: true }))}
+              form={createForm}
+              touched={createTouched}
+              errors={createErrors}
+              onChange={(e) =>
+                setCreateForm((p) => ({
+                  ...p,
+                  [e.target.name]: e.target.value,
+                }))
+              }
+              onBlur={(e) =>
+                setCreateTouched((p) => ({ ...p, [e.target.name]: true }))
+              }
             />
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outlined" onClick={closeCreate} disabled={createStatus === "loading"}
-                className="!rounded-2xl !border-slate-200 !px-6 !py-3 !text-sm !font-bold !normal-case !text-slate-700">
+              <Button
+                variant="outlined"
+                onClick={closeCreate}
+                disabled={createStatus === "loading"}
+                className="!rounded-2xl !border-slate-200 !px-6 !py-3 !text-sm !font-bold !normal-case !text-slate-700"
+              >
                 Отмена
               </Button>
-              <Button variant="contained" onClick={handleCreate} disabled={createStatus === "loading"}
-                className="!rounded-2xl !bg-brand-500 !px-6 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600">
+              <Button
+                variant="contained"
+                onClick={handleCreate}
+                disabled={createStatus === "loading"}
+                className="!rounded-2xl !bg-brand-500 !px-6 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600"
+              >
                 {createStatus === "loading" ? "Создаём..." : "Создать"}
               </Button>
             </div>
@@ -681,8 +886,13 @@ export function ClientsPage() {
       </Dialog>
 
       {/* Edit dialog */}
-      <Dialog open={editOpen} onClose={closeEdit} fullWidth maxWidth="sm"
-        PaperProps={{ className: "!rounded-[32px] !bg-white/95 !shadow-2xl" }}>
+      <Dialog
+        open={editOpen}
+        onClose={closeEdit}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ className: "!rounded-[32px] !bg-white/95 !shadow-2xl" }}
+      >
         <DialogTitle className="!px-6 !pt-6 !text-2xl !font-extrabold !tracking-tight !text-slate-950">
           Редактировать клиента
         </DialogTitle>
@@ -690,18 +900,32 @@ export function ClientsPage() {
           <div className="space-y-4">
             {updateError && <Alert severity="error">{updateError}</Alert>}
             <ClientFormFields
-              form={editForm} touched={editTouched} errors={editErrors} loading={editLoading}
-              onChange={(e) => setEditForm((p) => ({ ...p, [e.target.name]: e.target.value }))}
-              onBlur={(e) => setEditTouched((p) => ({ ...p, [e.target.name]: true }))}
+              form={editForm}
+              touched={editTouched}
+              errors={editErrors}
+              loading={editLoading}
+              onChange={(e) =>
+                setEditForm((p) => ({ ...p, [e.target.name]: e.target.value }))
+              }
+              onBlur={(e) =>
+                setEditTouched((p) => ({ ...p, [e.target.name]: true }))
+              }
             />
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outlined" onClick={closeEdit} disabled={updateStatus === "loading" || editLoading}
-                className="!rounded-2xl !border-slate-200 !px-6 !py-3 !text-sm !font-bold !normal-case !text-slate-700">
+              <Button
+                variant="outlined"
+                onClick={closeEdit}
+                disabled={updateStatus === "loading" || editLoading}
+                className="!rounded-2xl !border-slate-200 !px-6 !py-3 !text-sm !font-bold !normal-case !text-slate-700"
+              >
                 Отмена
               </Button>
-              <Button variant="contained" onClick={handleEdit}
+              <Button
+                variant="contained"
+                onClick={handleEdit}
                 disabled={updateStatus === "loading" || editLoading}
-                className="!rounded-2xl !bg-brand-500 !px-6 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600">
+                className="!rounded-2xl !bg-brand-500 !px-6 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600"
+              >
                 {updateStatus === "loading" ? "Сохраняем..." : "Сохранить"}
               </Button>
             </div>
@@ -710,9 +934,12 @@ export function ClientsPage() {
       </Dialog>
 
       <DeleteDialog
-        open={deleteOpen} name={deletingClient?.name}
-        status={deleteStatus} error={deleteError}
-        onConfirm={handleDelete} onClose={closeDelete}
+        open={deleteOpen}
+        name={deletingClient?.name}
+        status={deleteStatus}
+        error={deleteError}
+        onConfirm={handleDelete}
+        onClose={closeDelete}
       />
     </div>
   );

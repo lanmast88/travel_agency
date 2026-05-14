@@ -14,6 +14,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Aside from "../features/components/Aside";
+import { http } from "../shared/api/http";
 import {
   clearCreateState,
   clearDeactivateState,
@@ -23,6 +24,24 @@ import {
   fetchUsers,
   updateUser,
 } from "../features/users/usersSlice";
+
+function ViewIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function InfoRow({ label, value }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</span>
+      <span className="text-sm font-semibold text-slate-800">{value ?? "—"}</span>
+    </div>
+  );
+}
 
 const ROLE_LABELS = {
   user: "Пользователь",
@@ -264,6 +283,11 @@ export function UsersPage() {
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [deactivatingUser, setDeactivatingUser] = useState(null);
 
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewUser, setViewUser] = useState(null);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [viewError, setViewError] = useState(null);
+
   const createErrors = useMemo(() => validateCreateForm(createForm), [createForm]);
   const editErrors = useMemo(() => validateEditForm(editForm), [editForm]);
 
@@ -271,9 +295,28 @@ export function UsersPage() {
     dispatch(fetchUsers({ activeOnly }));
   }, [dispatch, activeOnly]);
 
-  useEffect(() => {
+  function handleRoleFilter(role) {
+    setRoleFilter(role);
     setPage(1);
-  }, [roleFilter, activeOnly]);
+  }
+
+  function handleActiveOnly(value) {
+    setActiveOnly(value);
+    setPage(1);
+  }
+
+  function openViewUser(user) {
+    setViewUser(null);
+    setViewError(null);
+    setViewOpen(true);
+    setViewLoading(true);
+    http
+      .get(`/v1/users/${user.id}`)
+      .then(({ data }) => setViewUser(data))
+      .catch(() => setViewError("Не удалось загрузить данные пользователя."))
+      .finally(() => setViewLoading(false));
+  }
+  function closeViewUser() { setViewOpen(false); }
 
   const filtered = useMemo(() => {
     if (!roleFilter) return users;
@@ -415,7 +458,7 @@ export function UsersPage() {
                         <button
                           key={tab.id}
                           type="button"
-                          onClick={() => setRoleFilter(tab.id)}
+                          onClick={() => handleRoleFilter(tab.id)}
                           className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
                             roleFilter === tab.id
                               ? "border-brand-200 bg-brand-50 text-brand-600"
@@ -432,7 +475,7 @@ export function UsersPage() {
                       <input
                         type="checkbox"
                         checked={activeOnly}
-                        onChange={(e) => setActiveOnly(e.target.checked)}
+                        onChange={(e) => handleActiveOnly(e.target.checked)}
                         className="h-4 w-4 rounded border-slate-300 accent-brand-500"
                       />
                       Только активные
@@ -494,34 +537,44 @@ export function UsersPage() {
                             {formatDate(user.created_at)}
                           </td>
                           <td className="px-4 py-4">
-                            {isAdmin && (
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => openEdit(user)}
-                                  className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-brand-600"
-                                  title="Редактировать"
-                                >
-                                  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-                                    <path d="m4 20 4.2-1 9.5-9.5a2.12 2.12 0 0 0-3-3L5.2 16 4 20ZM13.5 7.5l3 3"
-                                      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                  </svg>
-                                </button>
-                                {currentUser?.id !== user.id && (
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => openViewUser(user)}
+                                className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-sky-50 hover:text-sky-600"
+                                title="Просмотреть"
+                              >
+                                <ViewIcon />
+                              </button>
+                              {isAdmin && (
+                                <>
                                   <button
                                     type="button"
-                                    onClick={() => openDeactivate(user)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
-                                    title="Деактивировать"
+                                    onClick={() => openEdit(user)}
+                                    className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-brand-600"
+                                    title="Редактировать"
                                   >
                                     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-                                      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-                                      <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                                      <path d="m4 20 4.2-1 9.5-9.5a2.12 2.12 0 0 0-3-3L5.2 16 4 20ZM13.5 7.5l3 3"
+                                        stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                   </button>
-                                )}
-                              </div>
-                            )}
+                                  {currentUser?.id !== user.id && (
+                                    <button
+                                      type="button"
+                                      onClick={() => openDeactivate(user)}
+                                      className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+                                      title="Деактивировать"
+                                    >
+                                      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                                        <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                </>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -615,6 +668,48 @@ export function UsersPage() {
         status={deactivateStatus} error={deactivateError}
         onConfirm={handleDeactivate} onClose={closeDeactivate}
       />
+
+      {/* View user dialog */}
+      <Dialog open={viewOpen} onClose={closeViewUser} fullWidth maxWidth="sm"
+        PaperProps={{ className: "!rounded-[28px] !bg-white !shadow-2xl" }}>
+        <DialogTitle className="!px-6 !pt-6 !text-xl !font-extrabold !tracking-tight !text-slate-950">
+          {viewLoading ? "Загрузка..." : (viewUser ? `${viewUser.first_name} ${viewUser.last_name ?? ""}`.trim() : "Пользователь")}
+        </DialogTitle>
+        <DialogContent className="!px-6 !pb-6 !pt-2">
+          {viewLoading && (
+            <div className="flex justify-center py-8">
+              <CircularProgress />
+            </div>
+          )}
+          {viewError && <Alert severity="error">{viewError}</Alert>}
+          {viewUser && !viewLoading && (
+            <div className="space-y-4 pt-1">
+              <div className="flex items-center gap-4">
+                <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-base font-black text-white ${getAvatarColor(viewUser.id)}`}>
+                  {getInitials(viewUser)}
+                </div>
+                <div>
+                  <div className="text-lg font-extrabold text-slate-950">
+                    {viewUser.first_name} {viewUser.last_name ?? ""}
+                  </div>
+                  <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${ROLE_CLASSES[viewUser.role]}`}>
+                    {ROLE_LABELS[viewUser.role]}
+                  </span>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <InfoRow label="Email" value={viewUser.email} />
+                <InfoRow label="Последний вход" value={formatDate(viewUser.last_login_at)} />
+                <InfoRow label="Дата регистрации" value={formatDate(viewUser.created_at)} />
+              </div>
+              <InfoRow
+                label="ID"
+                value={<span className="font-mono text-xs text-slate-500">{viewUser.id}</span>}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

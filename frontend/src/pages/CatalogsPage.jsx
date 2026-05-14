@@ -14,6 +14,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Aside from "../features/components/Aside";
+import { http } from "../shared/api/http";
 import {
   clearCreateCityState,
   clearCreateHotelState,
@@ -34,6 +35,24 @@ import {
   updateHotel,
 } from "../features/catalog/catalogSlice";
 import { fetchCities } from "../features/travel/travelSlice";
+
+function ViewIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function InfoRow({ label, value }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</span>
+      <span className="text-sm font-semibold text-slate-800">{value ?? "—"}</span>
+    </div>
+  );
+}
 
 function PlusIcon() {
   return (
@@ -248,6 +267,11 @@ function CitiesTab({ isStaff, isAdmin }) {
     deleteCityError,
   } = useSelector((s) => s.catalog);
 
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewCity, setViewCity] = useState(null);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [viewError, setViewError] = useState(null);
+
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState(initialCityForm);
   const [createTouched, setCreateTouched] = useState({});
@@ -263,6 +287,19 @@ function CitiesTab({ isStaff, isAdmin }) {
   useEffect(() => {
     dispatch(fetchCatalogCities(citiesPage));
   }, [dispatch, citiesPage]);
+
+  function openView(city) {
+    setViewCity(null);
+    setViewError(null);
+    setViewOpen(true);
+    setViewLoading(true);
+    http
+      .get(`/v1/cities/${city.id}`)
+      .then(({ data }) => setViewCity(data))
+      .catch(() => setViewError("Не удалось загрузить данные города."))
+      .finally(() => setViewLoading(false));
+  }
+  function closeView() { setViewOpen(false); }
 
   const createErrors = useMemo(
     () => validateCityForm(createForm),
@@ -380,8 +417,8 @@ function CitiesTab({ isStaff, isAdmin }) {
           <col className="w-[22%]" />
           <col className="w-[18%]" />
           <col className="w-[15%]" />
-          <col className="w-[35%]" />
-          <col className="w-[10%]" />
+          <col className="w-[30%]" />
+          <col className="w-[15%]" />
         </colgroup>
         <thead className="bg-slate-50">
           <tr className="text-left text-xs uppercase tracking-[0.1em] text-slate-400">
@@ -412,6 +449,14 @@ function CitiesTab({ isStaff, isAdmin }) {
               </td>
               <td className="px-3 py-4">
                 <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => openView(city)}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-sky-50 hover:text-sky-600"
+                    title="Просмотреть"
+                  >
+                    <ViewIcon />
+                  </button>
                   {isStaff && (
                     <button
                       type="button"
@@ -577,6 +622,43 @@ function CitiesTab({ isStaff, isAdmin }) {
         onConfirm={handleDelete}
         onClose={closeDelete}
       />
+
+      {/* View dialog */}
+      <Dialog
+        open={viewOpen}
+        onClose={closeView}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ className: "!rounded-[28px] !bg-white !shadow-2xl" }}
+      >
+        <DialogTitle className="!px-6 !pt-6 !text-xl !font-extrabold !tracking-tight !text-slate-950">
+          {viewLoading ? "Загрузка..." : (viewCity?.name ?? "Город")}
+        </DialogTitle>
+        <DialogContent className="!px-6 !pb-6 !pt-2">
+          {viewLoading && (
+            <div className="flex justify-center py-8">
+              <CircularProgress />
+            </div>
+          )}
+          {viewError && <Alert severity="error">{viewError}</Alert>}
+          {viewCity && !viewLoading && (
+            <div className="space-y-4 pt-1">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <InfoRow label="Название" value={viewCity.name} />
+                <InfoRow label="Страна" value={viewCity.country} />
+                {viewCity.climate && <InfoRow label="Климат" value={viewCity.climate} />}
+              </div>
+              {viewCity.description && (
+                <InfoRow label="Описание" value={viewCity.description} />
+              )}
+              <InfoRow
+                label="ID"
+                value={<span className="font-mono text-xs text-slate-500">{viewCity.id}</span>}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
@@ -714,6 +796,11 @@ function HotelsTab({ isStaff, isAdmin }) {
     dispatch(fetchCities());
   }, [dispatch]);
 
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewHotel, setViewHotel] = useState(null);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [viewError, setViewError] = useState(null);
+
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState(initialHotelForm);
   const [createTouched, setCreateTouched] = useState({});
@@ -725,6 +812,19 @@ function HotelsTab({ isStaff, isAdmin }) {
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingHotel, setDeletingHotel] = useState(null);
+
+  function openView(hotel) {
+    setViewHotel(null);
+    setViewError(null);
+    setViewOpen(true);
+    setViewLoading(true);
+    http
+      .get(`/v1/hotels/${hotel.id}`)
+      .then(({ data }) => setViewHotel(data))
+      .catch(() => setViewError("Не удалось загрузить данные отеля."))
+      .finally(() => setViewLoading(false));
+  }
+  function closeView() { setViewOpen(false); }
 
   const createErrors = useMemo(
     () => validateHotelForm(createForm),
@@ -858,12 +958,12 @@ function HotelsTab({ isStaff, isAdmin }) {
 
       <table className="w-full table-fixed border-collapse">
         <colgroup>
+          <col className="w-[20%]" />
+          <col className="w-[15%]" />
+          <col className="w-[9%]" />
           <col className="w-[22%]" />
-          <col className="w-[16%]" />
-          <col className="w-[10%]" />
-          <col className="w-[26%]" />
-          <col className="w-[16%]" />
-          <col className="w-[10%]" />
+          <col className="w-[14%]" />
+          <col className="w-[20%]" />
         </colgroup>
         <thead className="bg-slate-50">
           <tr className="text-left text-xs uppercase tracking-[0.1em] text-slate-400">
@@ -904,6 +1004,14 @@ function HotelsTab({ isStaff, isAdmin }) {
               </td>
               <td className="px-3 py-4">
                 <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => openView(hotel)}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-sky-50 hover:text-sky-600"
+                    title="Просмотреть"
+                  >
+                    <ViewIcon />
+                  </button>
                   {isStaff && (
                     <button
                       type="button"
@@ -1069,6 +1177,62 @@ function HotelsTab({ isStaff, isAdmin }) {
         onConfirm={handleDelete}
         onClose={closeDelete}
       />
+
+      {/* View dialog */}
+      <Dialog
+        open={viewOpen}
+        onClose={closeView}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ className: "!rounded-[28px] !bg-white !shadow-2xl" }}
+      >
+        <DialogTitle className="!px-6 !pt-6 !text-xl !font-extrabold !tracking-tight !text-slate-950">
+          {viewLoading ? "Загрузка..." : (viewHotel?.name ?? "Отель")}
+        </DialogTitle>
+        <DialogContent className="!px-6 !pb-6 !pt-2">
+          {viewLoading && (
+            <div className="flex justify-center py-8">
+              <CircularProgress />
+            </div>
+          )}
+          {viewError && <Alert severity="error">{viewError}</Alert>}
+          {viewHotel && !viewLoading && (
+            <div className="space-y-4 pt-1">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <InfoRow label="Название" value={viewHotel.name} />
+                <InfoRow
+                  label="Город"
+                  value={`${viewHotel.city.name}, ${viewHotel.city.country}`}
+                />
+                <InfoRow
+                  label="Звёздность"
+                  value={<span className="text-amber-400">{"★".repeat(viewHotel.stars)}<span className="text-slate-200">{"★".repeat(5 - viewHotel.stars)}</span></span>}
+                />
+                <InfoRow label="Адрес" value={viewHotel.address} />
+              </div>
+              {viewHotel.amenities.length > 0 && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Удобства</span>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {viewHotel.amenities.map((a) => (
+                      <span key={a} className="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-xs font-bold text-sky-700">
+                        {a}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {viewHotel.description && (
+                <InfoRow label="Описание" value={viewHotel.description} />
+              )}
+              <InfoRow
+                label="ID"
+                value={<span className="font-mono text-xs text-slate-500">{viewHotel.id}</span>}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
