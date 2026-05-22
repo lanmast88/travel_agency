@@ -78,15 +78,22 @@ export function ClientDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
+  const [loyalty, setLoyalty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    http
-      .get(`/v1/clients/${id}`)
-      .then(({ data }) => setClient(data))
+    setLoyalty(null);
+    Promise.all([
+      http.get(`/v1/clients/${id}`),
+      http.get(`/v1/clients/${id}/loyalty`),
+    ])
+      .then(([clientRes, loyaltyRes]) => {
+        setClient(clientRes.data);
+        setLoyalty(loyaltyRes.data);
+      })
       .catch(() => setError("Не удалось загрузить клиента."))
       .finally(() => setLoading(false));
   }, [id]);
@@ -201,6 +208,22 @@ export function ClientDetailPage() {
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-semibold text-slate-600">Скидка</span>
                             <span className="text-lg font-black text-emerald-600">{client.discount_pct}%</span>
+                          </div>
+                        )}
+                        {loyalty?.next_level && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-slate-600">Следующий уровень</span>
+                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${LOYALTY_CLASSES[loyalty.next_level]}`}>
+                              {LOYALTY_LABELS[loyalty.next_level]}
+                            </span>
+                          </div>
+                        )}
+                        {loyalty?.sales_to_next_level != null && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-slate-600">До следующего уровня</span>
+                            <span className="text-base font-black text-slate-700">
+                              {loyalty.sales_to_next_level} покупок
+                            </span>
                           </div>
                         )}
                       </div>

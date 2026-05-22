@@ -16,6 +16,7 @@ import { SaleDetailPage } from "../pages/SaleDetailPage";
 import { SalesPage } from "../pages/SalesPage";
 import { TourDetailPage } from "../pages/TourDetailPage";
 import TravelsPage from "../pages/TravelsPage";
+import { UserDetailPage } from "../pages/UserDetailPage";
 import { UsersPage } from "../pages/UsersPage";
 
 function RootLayout() {
@@ -91,6 +92,10 @@ export const router = createBrowserRouter([
           {
             path: "/users",
             element: <UsersPage />,
+          },
+          {
+            path: "/users/:id",
+            element: <UserDetailPage />,
           },
         ],
       },

@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Aside from "../features/components/Aside";
-import { http } from "../shared/api/http";
 import {
   clearCreateState,
   clearDeactivateState,
@@ -260,6 +260,7 @@ function EditFormFields({ form, touched, errors, onChange, onBlur, onRoleChange 
 
 export function UsersPage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const currentUser = useSelector((s) => s.auth.currentUser);
   const { users, listStatus, listError, createStatus, createError, updateStatus, updateError, deactivateStatus, deactivateError } =
     useSelector((s) => s.users);
@@ -283,11 +284,6 @@ export function UsersPage() {
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [deactivatingUser, setDeactivatingUser] = useState(null);
 
-  const [viewOpen, setViewOpen] = useState(false);
-  const [viewUser, setViewUser] = useState(null);
-  const [viewLoading, setViewLoading] = useState(false);
-  const [viewError, setViewError] = useState(null);
-
   const createErrors = useMemo(() => validateCreateForm(createForm), [createForm]);
   const editErrors = useMemo(() => validateEditForm(editForm), [editForm]);
 
@@ -304,19 +300,6 @@ export function UsersPage() {
     setActiveOnly(value);
     setPage(1);
   }
-
-  function openViewUser(user) {
-    setViewUser(null);
-    setViewError(null);
-    setViewOpen(true);
-    setViewLoading(true);
-    http
-      .get(`/v1/users/${user.id}`)
-      .then(({ data }) => setViewUser(data))
-      .catch(() => setViewError("Не удалось загрузить данные пользователя."))
-      .finally(() => setViewLoading(false));
-  }
-  function closeViewUser() { setViewOpen(false); }
 
   const filtered = useMemo(() => {
     if (!roleFilter) return users;
@@ -540,7 +523,7 @@ export function UsersPage() {
                             <div className="flex items-center gap-1">
                               <button
                                 type="button"
-                                onClick={() => openViewUser(user)}
+                                onClick={() => navigate(`/users/${user.id}`)}
                                 className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-sky-50 hover:text-sky-600"
                                 title="Просмотреть"
                               >
@@ -669,47 +652,6 @@ export function UsersPage() {
         onConfirm={handleDeactivate} onClose={closeDeactivate}
       />
 
-      {/* View user dialog */}
-      <Dialog open={viewOpen} onClose={closeViewUser} fullWidth maxWidth="sm"
-        PaperProps={{ className: "!rounded-[28px] !bg-white !shadow-2xl" }}>
-        <DialogTitle className="!px-6 !pt-6 !text-xl !font-extrabold !tracking-tight !text-slate-950">
-          {viewLoading ? "Загрузка..." : (viewUser ? `${viewUser.first_name} ${viewUser.last_name ?? ""}`.trim() : "Пользователь")}
-        </DialogTitle>
-        <DialogContent className="!px-6 !pb-6 !pt-2">
-          {viewLoading && (
-            <div className="flex justify-center py-8">
-              <CircularProgress />
-            </div>
-          )}
-          {viewError && <Alert severity="error">{viewError}</Alert>}
-          {viewUser && !viewLoading && (
-            <div className="space-y-4 pt-1">
-              <div className="flex items-center gap-4">
-                <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-base font-black text-white ${getAvatarColor(viewUser.id)}`}>
-                  {getInitials(viewUser)}
-                </div>
-                <div>
-                  <div className="text-lg font-extrabold text-slate-950">
-                    {viewUser.first_name} {viewUser.last_name ?? ""}
-                  </div>
-                  <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${ROLE_CLASSES[viewUser.role]}`}>
-                    {ROLE_LABELS[viewUser.role]}
-                  </span>
-                </div>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <InfoRow label="Email" value={viewUser.email} />
-                <InfoRow label="Последний вход" value={formatDate(viewUser.last_login_at)} />
-                <InfoRow label="Дата регистрации" value={formatDate(viewUser.created_at)} />
-              </div>
-              <InfoRow
-                label="ID"
-                value={<span className="font-mono text-xs text-slate-500">{viewUser.id}</span>}
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

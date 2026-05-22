@@ -361,7 +361,7 @@ function CreateDialog({
               value={form.sale_date}
               onChange={(e) => change("sale_date", e.target.value)}
               onBlur={() => blur("sale_date")}
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
               inputProps={{ max: todayIso() }}
               error={Boolean(touched.sale_date && errors.sale_date)}
               helperText={

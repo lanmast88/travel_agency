@@ -296,7 +296,7 @@ function ClientFormFields({
           type="date"
           onChange={onChange}
           onBlur={onBlur}
-          InputLabelProps={{ shrink: true }}
+          slotProps={{ inputLabel: { shrink: true } }}
           inputProps={{ max: todayMinus(18), min: todayMinus(120) }}
           error={Boolean(touched.birth_date && errors.birth_date)}
           helperText={

@@ -39,7 +39,13 @@ import { fetchCities } from "../features/travel/travelSlice";
 function ViewIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
     </svg>
   );
@@ -48,8 +54,12 @@ function ViewIcon() {
 function InfoRow({ label, value }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</span>
-      <span className="text-sm font-semibold text-slate-800">{value ?? "—"}</span>
+      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+        {label}
+      </span>
+      <span className="text-sm font-semibold text-slate-800">
+        {value ?? "—"}
+      </span>
     </div>
   );
 }
@@ -231,11 +241,12 @@ function CityFormFields({ form, touched, errors, onChange, onBlur }) {
         fullWidth
         multiline
         minRows={3}
-        label="Описание"
+        label={<span>Описание <span style={{ fontSize: '0.82em', fontWeight: 400, opacity: 0.7 }}>· Необязательно</span></span>}
         name="description"
         value={form.description}
         onChange={onChange}
-        helperText="Необязательно"
+        slotProps={{ inputLabel: { shrink: true } }}
+        helperText=" "
       />
     </div>
   );
@@ -299,7 +310,9 @@ function CitiesTab({ isStaff, isAdmin }) {
       .catch(() => setViewError("Не удалось загрузить данные города."))
       .finally(() => setViewLoading(false));
   }
-  function closeView() { setViewOpen(false); }
+  function closeView() {
+    setViewOpen(false);
+  }
 
   const createErrors = useMemo(
     () => validateCityForm(createForm),
@@ -646,14 +659,20 @@ function CitiesTab({ isStaff, isAdmin }) {
               <div className="grid gap-4 sm:grid-cols-2">
                 <InfoRow label="Название" value={viewCity.name} />
                 <InfoRow label="Страна" value={viewCity.country} />
-                {viewCity.climate && <InfoRow label="Климат" value={viewCity.climate} />}
+                {viewCity.climate && (
+                  <InfoRow label="Климат" value={viewCity.climate} />
+                )}
               </div>
               {viewCity.description && (
                 <InfoRow label="Описание" value={viewCity.description} />
               )}
               <InfoRow
                 label="ID"
-                value={<span className="font-mono text-xs text-slate-500">{viewCity.id}</span>}
+                value={
+                  <span className="font-mono text-xs text-slate-500">
+                    {viewCity.id}
+                  </span>
+                }
               />
             </div>
           )}
@@ -736,11 +755,12 @@ function HotelFormFields({
         fullWidth
         multiline
         minRows={2}
-        label="Описание"
+        label={<span>Описание <span style={{ fontSize: '0.82em', fontWeight: 400, opacity: 0.7 }}>· Необязательно</span></span>}
         name="description"
         value={form.description}
         onChange={onChange}
-        helperText="Необязательно"
+        slotProps={{ inputLabel: { shrink: true } }}
+        helperText=" "
       />
     </div>
   );
@@ -824,7 +844,9 @@ function HotelsTab({ isStaff, isAdmin }) {
       .catch(() => setViewError("Не удалось загрузить данные отеля."))
       .finally(() => setViewLoading(false));
   }
-  function closeView() { setViewOpen(false); }
+  function closeView() {
+    setViewOpen(false);
+  }
 
   const createErrors = useMemo(
     () => validateHotelForm(createForm),
@@ -1206,16 +1228,28 @@ function HotelsTab({ isStaff, isAdmin }) {
                 />
                 <InfoRow
                   label="Звёздность"
-                  value={<span className="text-amber-400">{"★".repeat(viewHotel.stars)}<span className="text-slate-200">{"★".repeat(5 - viewHotel.stars)}</span></span>}
+                  value={
+                    <span className="text-amber-400">
+                      {"★".repeat(viewHotel.stars)}
+                      <span className="text-slate-200">
+                        {"★".repeat(5 - viewHotel.stars)}
+                      </span>
+                    </span>
+                  }
                 />
                 <InfoRow label="Адрес" value={viewHotel.address} />
               </div>
               {viewHotel.amenities.length > 0 && (
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Удобства</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Удобства
+                  </span>
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {viewHotel.amenities.map((a) => (
-                      <span key={a} className="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-xs font-bold text-sky-700">
+                      <span
+                        key={a}
+                        className="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-xs font-bold text-sky-700"
+                      >
                         {a}
                       </span>
                     ))}
@@ -1227,7 +1261,11 @@ function HotelsTab({ isStaff, isAdmin }) {
               )}
               <InfoRow
                 label="ID"
-                value={<span className="font-mono text-xs text-slate-500">{viewHotel.id}</span>}
+                value={
+                  <span className="font-mono text-xs text-slate-500">
+                    {viewHotel.id}
+                  </span>
+                }
               />
             </div>
           )}

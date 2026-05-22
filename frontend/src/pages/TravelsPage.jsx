@@ -392,6 +392,8 @@ function TravelsPage() {
 
     if (!tourForm.start_date) {
       errors.start_date = "Укажите дату начала";
+    } else if (tourForm.start_date < new Date().toISOString().split("T")[0]) {
+      errors.start_date = "Дата начала не может быть в прошлом";
     }
 
     if (!tourForm.end_date) {
@@ -1006,11 +1008,12 @@ function TravelsPage() {
               fullWidth
               multiline
               minRows={3}
-              label="Описание"
+              label={<span>Описание <span style={{ fontSize: '0.82em', fontWeight: 400, opacity: 0.7 }}>· Необязательно</span></span>}
               name="description"
               value={editForm.description}
               onChange={handleEditFormChange}
-              helperText="Необязательно"
+              slotProps={{ inputLabel: { shrink: true } }}
+              helperText=" "
             />
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -1024,7 +1027,7 @@ function TravelsPage() {
                 onBlur={handleEditFormBlur}
                 error={Boolean(editFormTouched.start_date && editFormErrors.start_date)}
                 helperText={editFormTouched.start_date && editFormErrors.start_date ? editFormErrors.start_date : " "}
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
               <TextField
                 fullWidth
@@ -1036,7 +1039,7 @@ function TravelsPage() {
                 onBlur={handleEditFormBlur}
                 error={Boolean(editFormTouched.end_date && editFormErrors.end_date)}
                 helperText={editFormTouched.end_date && editFormErrors.end_date ? editFormErrors.end_date : " "}
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
             </div>
 
@@ -1244,33 +1247,37 @@ function TravelsPage() {
               fullWidth
               multiline
               minRows={3}
-              label="Описание"
+              label={<span>Описание <span style={{ fontSize: '0.82em', fontWeight: 400, opacity: 0.7 }}>· Необязательно</span></span>}
               name="description"
               value={tourForm.description}
               onChange={handleFormChange}
-              helperText="Необязательно"
+              slotProps={{ inputLabel: { shrink: true } }}
+              helperText=" "
             />
 
             <div className="grid gap-4 sm:grid-cols-2">
               <TextField
                 fullWidth
                 type="date"
+                label="Дата начала"
                 name="start_date"
                 value={tourForm.start_date}
                 onChange={handleFormChange}
                 onBlur={handleFormBlur}
+                inputProps={{ min: new Date().toISOString().split("T")[0] }}
                 error={Boolean(formTouched.start_date && formErrors.start_date)}
                 helperText={
                   formTouched.start_date && formErrors.start_date
                     ? formErrors.start_date
                     : " "
                 }
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
 
               <TextField
                 fullWidth
                 type="date"
+                label="Дата окончания"
                 name="end_date"
                 value={tourForm.end_date}
                 onChange={handleFormChange}
@@ -1281,7 +1288,7 @@ function TravelsPage() {
                     ? formErrors.end_date
                     : " "
                 }
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
             </div>
 

@@ -36,7 +36,13 @@ function formatMoney(value) {
 function BackIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-      <path d="M19 12H5M5 12l7 7M5 12l7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M19 12H5M5 12l7 7M5 12l7-7"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -44,8 +50,12 @@ function BackIcon() {
 function InfoRow({ label, value }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</span>
-      <span className="text-sm font-semibold text-slate-800">{value ?? "—"}</span>
+      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+        {label}
+      </span>
+      <span className="text-sm font-semibold text-slate-800">
+        {value ?? "—"}
+      </span>
     </div>
   );
 }
@@ -117,7 +127,9 @@ export function TourDetailPage() {
                     {/* Main details */}
                     <section className="rounded-[28px] border border-slate-200 bg-white px-6 py-6 shadow-sm shadow-slate-200/60">
                       <div className="mb-5 flex flex-wrap items-center gap-2">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${STATUS_CLASSES[tour.status] ?? "bg-slate-100 text-slate-500"}`}>
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${STATUS_CLASSES[tour.status] ?? "bg-slate-100 text-slate-500"}`}
+                        >
                           {STATUS_LABELS[tour.status] ?? tour.status}
                         </span>
                         {tour.is_hot && (
@@ -131,11 +143,23 @@ export function TourDetailPage() {
                       </div>
 
                       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                        <InfoRow label="Дата начала" value={formatDate(tour.start_date)} />
-                        <InfoRow label="Дата окончания" value={formatDate(tour.end_date)} />
-                        <InfoRow label="Продолжительность" value={`${tour.duration_nights} ночей`} />
+                        <InfoRow
+                          label="Дата начала"
+                          value={formatDate(tour.start_date)}
+                        />
+                        <InfoRow
+                          label="Дата окончания"
+                          value={formatDate(tour.end_date)}
+                        />
+                        <InfoRow
+                          label="Продолжительность"
+                          value={`${tour.duration_nights} ночей`}
+                        />
                         <InfoRow label="Мест доступно" value={tour.available} />
-                        <InfoRow label="Цена за человека" value={formatMoney(tour.price)} />
+                        <InfoRow
+                          label="Цена за человека"
+                          value={formatMoney(tour.price)}
+                        />
                       </div>
                     </section>
 
@@ -160,11 +184,16 @@ export function TourDetailPage() {
                         Город
                       </div>
                       <div className="flex flex-col gap-2">
-                        <div className="text-base font-bold text-slate-900">{tour.city.name}</div>
-                        <div className="text-sm font-semibold text-slate-500">{tour.city.country}</div>
+                        <div className="text-base font-bold text-slate-900">
+                          {tour.city.name}
+                        </div>
+                        <div className="text-sm font-semibold text-slate-500">
+                          {tour.city.country}
+                        </div>
                         {tour.city.climate && (
                           <div className="text-sm text-slate-600">
-                            <span className="font-semibold">Климат:</span> {tour.city.climate}
+                            <span className="font-semibold">Климат:</span>{" "}
+                            {tour.city.climate}
                           </div>
                         )}
                         {tour.city.description && (
@@ -181,9 +210,13 @@ export function TourDetailPage() {
                         Отель
                       </div>
                       <div className="flex flex-col gap-2">
-                        <div className="text-base font-bold text-slate-900">{tour.hotel.name}</div>
+                        <div className="text-base font-bold text-slate-900">
+                          {tour.hotel.name}
+                        </div>
                         <StarRating stars={tour.hotel.stars} />
-                        <div className="text-sm text-slate-600">{tour.hotel.address}</div>
+                        <div className="text-sm text-slate-600">
+                          {tour.hotel.address}
+                        </div>
                       </div>
                     </section>
                   </div>

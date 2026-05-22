@@ -33,8 +33,8 @@ export const fetchSalesLookups = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const [clientsRes, toursRes, usersRes] = await Promise.all([
-        http.get("/v1/clients", { params: { page: 1, page_size: 500 } }),
-        http.get("/v1/tours", { params: { page: 1, page_size: 500 } }),
+        http.get("/v1/clients", { params: { page: 1, page_size: 100 } }),
+        http.get("/v1/tours", { params: { page: 1, page_size: 100 } }),
         http.get("/v1/users", { params: { limit: 500 } }),
       ]);
       return {
