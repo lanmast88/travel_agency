@@ -1,0 +1,17 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  server: {
+    port: 5174,
+    proxy: {
+      "/api/v1/tours": { target: "http://localhost:8002", changeOrigin: true },
+      "/api/v1/cities": { target: "http://localhost:8002", changeOrigin: true },
+      "/api/v1/hotels": { target: "http://localhost:8002", changeOrigin: true },
+      "/api/v1/reviews": { target: "http://localhost:8002", changeOrigin: true },
+      "/api": { target: "http://localhost:8000", changeOrigin: true },
+    },
+  },
+});
