@@ -1,5 +1,6 @@
 import {
   Alert,
+  Autocomplete,
   Button,
   Checkbox,
   CircularProgress,
@@ -26,7 +27,9 @@ import {
   setTravelPage,
   updateTour,
 } from "../features/travel/travelSlice";
-import { Autocomplete } from "@mui/material";
+import { CalendarIcon, EditIcon, PlusIcon, SearchIcon, TrashIcon } from "../shared/ui/Icons";
+import { formatDate, formatMoney, formatSeatsLabel } from "../shared/lib/format";
+import { Pagination } from "../shared/ui/Pagination";
 
 const seatToneMap = {
   success: "bg-emerald-500",
@@ -41,119 +44,10 @@ const statusToneMap = {
   neutral: "bg-slate-100 text-slate-500",
 };
 
-function SearchIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="h-5 w-5 text-slate-400"
-      aria-hidden="true"
-    >
-      <path
-        d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15a7.5 7.5 0 0 1 0 15z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="h-5 w-5 text-slate-500"
-      aria-hidden="true"
-    >
-      <path
-        d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-      <path
-        d="M12 5v14M5 12h14"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function EditIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path
-        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path
-        d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function GlobeDot() {
   return (
     <span className="inline-block h-2.5 w-2.5 rounded-full bg-brand-500" />
   );
-}
-
-function formatDate(value) {
-  return new Intl.DateTimeFormat("ru-RU").format(new Date(value));
-}
-
-function formatPrice(value) {
-  return new Intl.NumberFormat("ru-RU", {
-    style: "currency",
-    currency: "RUB",
-    maximumFractionDigits: 0,
-  }).format(Number(value));
-}
-
-function formatSeatsLabel(value) {
-  const lastTwoDigits = value % 100;
-  const lastDigit = value % 10;
-
-  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
-    return `${value} мест`;
-  }
-
-  if (lastDigit === 1) {
-    return `${value} место`;
-  }
-
-  if (lastDigit >= 2 && lastDigit <= 4) {
-    return `${value} места`;
-  }
-
-  return `${value} мест`;
 }
 
 function getSeatTone(value) {
@@ -334,7 +228,7 @@ function TravelsPage() {
         return {
           ...tour,
           cityName,
-          displayPrice: formatPrice(tour.price),
+          displayPrice: formatMoney(tour.price),
           displayStartDate: formatDate(tour.start_date),
           displayEndDate: formatDate(tour.end_date),
           seatsLabel: formatSeatsLabel(tour.available),
@@ -369,11 +263,6 @@ function TravelsPage() {
     const end = start + visibleTours.length - 1;
     return `Показано ${start}-${end} из ${total} результатов`;
   }, [page, pageSize, total, visibleTours.length]);
-
-  const pagination = useMemo(
-    () => Array.from({ length: pages }, (_, index) => index + 1),
-    [pages],
-  );
 
   const formErrors = useMemo(() => {
     const errors = {};
@@ -615,7 +504,7 @@ function TravelsPage() {
                 </h1>
 
                 <label className="flex w-full max-w-[380px] min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm shadow-slate-200/40 xl:flex-1">
-                  <SearchIcon />
+                  <SearchIcon className="text-slate-400" />
                   <input
                     type="text"
                     placeholder="Поиск по названию, городу..."
@@ -676,7 +565,7 @@ function TravelsPage() {
                         }
                         className="w-full bg-transparent text-base font-semibold text-slate-700 outline-none"
                       />
-                      <CalendarIcon />
+                      <CalendarIcon className="text-slate-500" />
                     </label>
                   </div>
 
@@ -693,7 +582,7 @@ function TravelsPage() {
                         }
                         className="w-full bg-transparent text-base font-semibold text-slate-700 outline-none"
                       />
-                      <CalendarIcon />
+                      <CalendarIcon className="text-slate-500" />
                     </label>
                   </div>
 
@@ -851,7 +740,7 @@ function TravelsPage() {
                                   className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-brand-600"
                                   title="Редактировать"
                                 >
-                                  <EditIcon />
+                                  <EditIcon size={16} />
                                 </button>
                               )}
                               {isAdmin && (
@@ -861,7 +750,7 @@ function TravelsPage() {
                                   className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
                                   title="Удалить"
                                 >
-                                  <TrashIcon />
+                                  <TrashIcon size={16} />
                                 </button>
                               )}
                             </div>
@@ -895,38 +784,7 @@ function TravelsPage() {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handlePageChange(page - 1)}
-                      disabled={page <= 1}
-                      className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-xl font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      ‹
-                    </button>
-                    {pagination.map((pageNumber) => (
-                      <button
-                        key={pageNumber}
-                        type="button"
-                        onClick={() => handlePageChange(pageNumber)}
-                        className={`flex h-11 w-11 items-center justify-center rounded-xl text-lg font-bold ${
-                          pageNumber === page
-                            ? "bg-brand-500 text-white"
-                            : "border border-slate-200 text-slate-700"
-                        }`}
-                      >
-                        {pageNumber}
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => handlePageChange(page + 1)}
-                      disabled={page >= pages}
-                      className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-xl font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      ›
-                    </button>
-                  </div>
+                  <Pagination page={page} pages={pages} onPageChange={handlePageChange} />
                 </div>
               </section>
             </div>
@@ -1264,14 +1122,13 @@ function TravelsPage() {
                 value={tourForm.start_date}
                 onChange={handleFormChange}
                 onBlur={handleFormBlur}
-                inputProps={{ min: new Date().toISOString().split("T")[0] }}
                 error={Boolean(formTouched.start_date && formErrors.start_date)}
                 helperText={
                   formTouched.start_date && formErrors.start_date
                     ? formErrors.start_date
                     : " "
                 }
-                slotProps={{ inputLabel: { shrink: true } }}
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: new Date().toISOString().split("T")[0] } }}
               />
 
               <TextField

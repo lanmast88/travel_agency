@@ -1,8 +1,10 @@
 import { CircularProgress } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Aside from "../features/components/Aside";
 import { http } from "../shared/api/http";
+import { getAvatarColor, getInitials } from "../shared/lib/avatar";
+import { formatDate, formatDateTime } from "../shared/lib/format";
 
 const LOYALTY_LABELS = {
   standard: "Стандарт",
@@ -18,24 +20,6 @@ const LOYALTY_CLASSES = {
   gold: "bg-yellow-100 text-yellow-700",
 };
 
-const AVATAR_PALETTE = [
-  "bg-brand-500", "bg-emerald-500", "bg-violet-500",
-  "bg-amber-500", "bg-rose-500", "bg-sky-600", "bg-teal-500", "bg-purple-500",
-];
-
-function getAvatarColor(id) {
-  const n = id ? parseInt(id.replace(/-/g, "").slice(0, 8), 16) : 0;
-  return AVATAR_PALETTE[n % AVATAR_PALETTE.length];
-}
-
-function getInitials(fullName) {
-  return fullName
-    .split(" ")
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
 function calcAge(birthDateStr) {
   if (!birthDateStr) return null;
   const today = new Date();
@@ -43,18 +27,6 @@ function calcAge(birthDateStr) {
   let age = today.getFullYear() - birth.getFullYear();
   if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
   return age;
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return "—";
-  const [y, m, d] = String(dateStr).split("-");
-  return `${d}.${m}.${y}`;
-}
-
-function formatDateTime(isoStr) {
-  if (!isoStr) return "—";
-  const d = new Date(isoStr);
-  return d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 function BackIcon() {
@@ -77,25 +49,23 @@ function InfoRow({ label, value }) {
 export function ClientDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [client, setClient] = useState(null);
-  const [loyalty, setLoyalty] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [{ client, loyalty, loading, error }, dispatch] = useReducer(
+    (_, next) => next,
+    { client: null, loyalty: null, loading: true, error: null },
+  );
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    setLoyalty(null);
+    dispatch({ client: null, loyalty: null, loading: true, error: null });
     Promise.all([
       http.get(`/v1/clients/${id}`),
       http.get(`/v1/clients/${id}/loyalty`),
     ])
-      .then(([clientRes, loyaltyRes]) => {
-        setClient(clientRes.data);
-        setLoyalty(loyaltyRes.data);
-      })
-      .catch(() => setError("Не удалось загрузить клиента."))
-      .finally(() => setLoading(false));
+      .then(([clientRes, loyaltyRes]) =>
+        dispatch({ client: clientRes.data, loyalty: loyaltyRes.data, loading: false, error: null }),
+      )
+      .catch(() =>
+        dispatch({ client: null, loyalty: null, loading: false, error: "Не удалось загрузить клиента." }),
+      );
   }, [id]);
 
   const age = client ? calcAge(client.birth_date) : null;

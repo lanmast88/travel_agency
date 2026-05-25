@@ -25,8 +25,10 @@ import {
   setSalesFilter,
   setSalesPage,
 } from "../features/sales/salesSlice";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
+import { getAvatarColor, getInitials } from "../shared/lib/avatar";
+import { formatDate, formatMoney } from "../shared/lib/format";
+import { PlusIcon } from "../shared/ui/Icons";
+import { Pagination } from "../shared/ui/Pagination";
 
 const STATUS_TABS = [
   { id: "", label: "Все" },
@@ -40,86 +42,8 @@ const STATUS_CLASSES = {
   cancelled: "bg-rose-100 text-rose-600",
 };
 
-const AVATAR_PALETTE = [
-  "bg-brand-500",
-  "bg-emerald-500",
-  "bg-violet-500",
-  "bg-amber-500",
-  "bg-rose-500",
-  "bg-sky-600",
-  "bg-teal-500",
-  "bg-purple-500",
-];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getAvatarColor(id) {
-  const n = id ? parseInt(id.replace(/-/g, "").slice(0, 8), 16) : 0;
-  return AVATAR_PALETTE[n % AVATAR_PALETTE.length];
-}
-
-function initials(name) {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return "—";
-  const [y, m, d] = String(dateStr).split("-");
-  return `${d}.${m}.${y}`;
-}
-
-function formatMoney(value) {
-  if (value === undefined || value === null) return "—";
-  return `${Number(value).toLocaleString("ru-RU")} ₽`;
-}
-
 function sumField(sales, field) {
   return sales.reduce((acc, s) => acc + Number(s[field] ?? 0), 0);
-}
-
-// ─── Pagination ───────────────────────────────────────────────────────────────
-
-function Pagination({ page, pages, onPageChange }) {
-  if (pages <= 1) return null;
-  const nums = Array.from({ length: pages }, (_, i) => i + 1);
-  return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        ‹
-      </button>
-      {nums.map((n) => (
-        <button
-          key={n}
-          type="button"
-          onClick={() => onPageChange(n)}
-          className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold ${
-            n === page
-              ? "bg-brand-500 text-white"
-              : "border border-slate-200 text-slate-700"
-          }`}
-        >
-          {n}
-        </button>
-      ))}
-      <button
-        type="button"
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= pages}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        ›
-      </button>
-    </div>
-  );
 }
 
 // ─── Cancel dialog ────────────────────────────────────────────────────────────
@@ -346,7 +270,7 @@ function CreateDialog({
               value={form.quantity}
               onChange={(e) => change("quantity", e.target.value)}
               onBlur={() => blur("quantity")}
-              inputProps={{ min: 1, max: 50 }}
+              slotProps={{ htmlInput: { min: 1, max: 50 } }}
               error={Boolean(touched.quantity && errors.quantity)}
               helperText={
                 touched.quantity && errors.quantity
@@ -361,8 +285,7 @@ function CreateDialog({
               value={form.sale_date}
               onChange={(e) => change("sale_date", e.target.value)}
               onBlur={() => blur("sale_date")}
-              slotProps={{ inputLabel: { shrink: true } }}
-              inputProps={{ max: todayIso() }}
+              slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: todayIso() } }}
               error={Boolean(touched.sale_date && errors.sale_date)}
               helperText={
                 touched.sale_date && errors.sale_date ? errors.sale_date : " "
@@ -446,9 +369,8 @@ export function SalesPage() {
   const [cancellingSale, setCancellingSale] = useState(null);
 
   useEffect(() => {
-    dispatch(fetchSales());
     if (lookupsStatus === "idle") dispatch(fetchSalesLookups());
-  }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dispatch, lookupsStatus]);
 
   useEffect(() => {
     dispatch(fetchSales());
@@ -537,19 +459,7 @@ export function SalesPage() {
                   className="!min-w-[200px] shrink-0 !rounded-2xl !bg-brand-500 !px-5 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600"
                 >
                   <span className="mr-2 inline-flex">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      className="h-5 w-5"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M12 5v14M5 12h14"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                    <PlusIcon />
                   </span>
                   Новая продажа
                 </Button>
@@ -668,7 +578,7 @@ export function SalesPage() {
                                 <div
                                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-black text-white ${getAvatarColor(sale.employee_id)}`}
                                 >
-                                  {initials(empName)}
+                                  {getInitials(empName)}
                                 </div>
                                 <span className="text-sm font-semibold text-slate-800">
                                   {empName}

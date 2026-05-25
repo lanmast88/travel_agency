@@ -1,33 +1,17 @@
 import { CircularProgress } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Aside from "../features/components/Aside";
 import { http } from "../shared/api/http";
 import { fetchSalesLookups } from "../features/sales/salesSlice";
+import { formatDate, formatDateTime, formatMoney } from "../shared/lib/format";
 
 const STATUS_LABELS = { confirmed: "Подтверждена", cancelled: "Отменена" };
 const STATUS_CLASSES = {
   confirmed: "bg-emerald-100 text-emerald-700",
   cancelled: "bg-rose-100 text-rose-600",
 };
-
-function formatDate(dateStr) {
-  if (!dateStr) return "—";
-  const [y, m, d] = String(dateStr).split("-");
-  return `${d}.${m}.${y}`;
-}
-
-function formatDateTime(isoStr) {
-  if (!isoStr) return "—";
-  const d = new Date(isoStr);
-  return d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-}
-
-function formatMoney(value) {
-  if (value === undefined || value === null) return "—";
-  return `${Number(value).toLocaleString("ru-RU")} ₽`;
-}
 
 function BackIcon() {
   return (
@@ -53,22 +37,21 @@ export function SaleDetailPage() {
 
   const { clientsList, toursList, usersList, lookupsStatus } = useSelector((s) => s.sales);
 
-  const [sale, setSale] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [{ sale, loading, error }, dispatchLocal] = useReducer(
+    (_, next) => next,
+    { sale: null, loading: true, error: null },
+  );
 
   useEffect(() => {
     if (lookupsStatus === "idle") dispatch(fetchSalesLookups());
   }, [dispatch, lookupsStatus]);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
+    dispatchLocal({ sale: null, loading: true, error: null });
     http
       .get(`/v1/sales/${id}`)
-      .then(({ data }) => setSale(data))
-      .catch(() => setError("Не удалось загрузить продажу."))
-      .finally(() => setLoading(false));
+      .then(({ data }) => dispatchLocal({ sale: data, loading: false, error: null }))
+      .catch(() => dispatchLocal({ sale: null, loading: false, error: "Не удалось загрузить продажу." }));
   }, [id]);
 
   function clientName(cid) {

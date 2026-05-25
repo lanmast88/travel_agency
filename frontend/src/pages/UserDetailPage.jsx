@@ -1,8 +1,10 @@
 import { CircularProgress } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Aside from "../features/components/Aside";
 import { http } from "../shared/api/http";
+import { getAvatarColor, getInitials } from "../shared/lib/avatar";
+import { formatDateTime } from "../shared/lib/format";
 
 const ROLE_LABELS = {
   user: "Пользователь",
@@ -15,30 +17,6 @@ const ROLE_CLASSES = {
   employee: "bg-brand-50 text-brand-600",
   admin: "bg-violet-100 text-violet-700",
 };
-
-const AVATAR_PALETTE = [
-  "bg-brand-500", "bg-emerald-500", "bg-violet-500",
-  "bg-amber-500", "bg-rose-500", "bg-sky-600", "bg-teal-500", "bg-purple-500",
-];
-
-function getAvatarColor(id) {
-  const n = id ? parseInt(id.replace(/-/g, "").slice(0, 8), 16) : 0;
-  return AVATAR_PALETTE[n % AVATAR_PALETTE.length];
-}
-
-function getInitials(user) {
-  const first = user.first_name?.[0]?.toUpperCase() ?? "";
-  const last = user.last_name?.[0]?.toUpperCase() ?? "";
-  return first + last || "?";
-}
-
-function formatDateTime(isoStr) {
-  if (!isoStr) return "—";
-  return new Date(isoStr).toLocaleString("ru-RU", {
-    day: "2-digit", month: "2-digit", year: "numeric",
-    hour: "2-digit", minute: "2-digit",
-  });
-}
 
 function BackIcon() {
   return (
@@ -60,18 +38,17 @@ function InfoRow({ label, value }) {
 export function UserDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [{ user, loading, error }, dispatch] = useReducer(
+    (_, next) => next,
+    { user: null, loading: true, error: null },
+  );
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
+    dispatch({ user: null, loading: true, error: null });
     http
       .get(`/v1/users/${id}`)
-      .then(({ data }) => setUser(data))
-      .catch(() => setError("Не удалось загрузить пользователя."))
-      .finally(() => setLoading(false));
+      .then(({ data }) => dispatch({ user: data, loading: false, error: null }))
+      .catch(() => dispatch({ user: null, loading: false, error: "Не удалось загрузить пользователя." }));
   }, [id]);
 
   const fullName = user ? `${user.first_name} ${user.last_name ?? ""}`.trim() : "";
@@ -115,7 +92,7 @@ export function UserDetailPage() {
                   <div className="flex flex-col gap-6 lg:col-span-2">
                     <section className="flex items-center gap-5 rounded-[28px] border border-slate-200 bg-white px-6 py-6 shadow-sm shadow-slate-200/60">
                       <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-lg font-black text-white ${getAvatarColor(user.id)}`}>
-                        {getInitials(user)}
+                        {getInitials(fullName)}
                       </div>
                       <div className="min-w-0">
                         <div className="text-xl font-extrabold text-slate-950">{fullName}</div>

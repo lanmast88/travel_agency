@@ -1,10 +1,5 @@
-import { useSelector } from "react-redux";
-import {
-  Navigate,
-  Outlet,
-  createBrowserRouter,
-} from "react-router-dom";
-import { AuthDialog } from "../features/auth/AuthDialog";
+import { createBrowserRouter } from "react-router-dom";
+import { ProtectedRoute, RootLayout } from "../features/components/RouteWrappers";
 import { CatalogsPage } from "../pages/CatalogsPage";
 import { ClientDetailPage } from "../pages/ClientDetailPage";
 import { ClientsPage } from "../pages/ClientsPage";
@@ -18,25 +13,6 @@ import { TourDetailPage } from "../pages/TourDetailPage";
 import TravelsPage from "../pages/TravelsPage";
 import { UserDetailPage } from "../pages/UserDetailPage";
 import { UsersPage } from "../pages/UsersPage";
-
-function RootLayout() {
-  return (
-    <>
-      <Outlet />
-      <AuthDialog />
-    </>
-  );
-}
-
-function ProtectedRoute() {
-  const { accessToken, authDialogOpen } = useSelector((state) => state.auth);
-
-  if (!accessToken && !authDialogOpen) {
-    return <Navigate to="/register?mode=login" replace />;
-  }
-
-  return <Outlet />;
-}
 
 export const router = createBrowserRouter([
   {

@@ -23,65 +23,10 @@ import {
   updateClient,
 } from "../features/clients/clientsSlice";
 import { http } from "../shared/api/http";
-
-function SearchIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="h-5 w-5 text-slate-400"
-      aria-hidden="true"
-    >
-      <path
-        d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-      <path
-        d="M12 5v14M5 12h14"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function EditIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path
-        d="m4 20 4.2-1 9.5-9.5a2.12 2.12 0 0 0-3-3L5.2 16 4 20ZM13.5 7.5l3 3"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path
-        d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+import { getAvatarColor, getInitials } from "../shared/lib/avatar";
+import { chain, pattern, required, validate } from "../shared/lib/validate";
+import { EditIcon, PlusIcon, SearchIcon, TrashIcon } from "../shared/ui/Icons";
+import { Pagination } from "../shared/ui/Pagination";
 
 const LOYALTY_LABELS = {
   standard: "Стандарт",
@@ -97,17 +42,6 @@ const LOYALTY_CLASSES = {
   gold: "bg-yellow-100 text-yellow-700",
 };
 
-const AVATAR_PALETTE = [
-  "bg-brand-500",
-  "bg-emerald-500",
-  "bg-violet-500",
-  "bg-amber-500",
-  "bg-rose-500",
-  "bg-sky-600",
-  "bg-teal-500",
-  "bg-purple-500",
-];
-
 const LOYALTY_TABS = [
   { id: "", label: "Все" },
   { id: "standard", label: "Стандарт" },
@@ -115,18 +49,6 @@ const LOYALTY_TABS = [
   { id: "silver", label: "Серебро" },
   { id: "gold", label: "Золото" },
 ];
-function getInitials(fullName) {
-  return fullName
-    .split(" ")
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
-function getAvatarColor(id) {
-  const n = id ? parseInt(id.replace(/-/g, "").slice(0, 8), 16) : 0;
-  return AVATAR_PALETTE[n % AVATAR_PALETTE.length];
-}
 
 function calcAge(birthDateStr) {
   if (!birthDateStr) return 0;
@@ -147,168 +69,35 @@ function todayMinus(years) {
   return d.toISOString().split("T")[0];
 }
 
-function validateClientForm(f) {
-  const e = {};
-  if (!f.full_name.trim() || f.full_name.trim().length < 2)
-    e.full_name = "Введите ФИО (минимум 2 символа)";
-  const cleanPhone = f.phone.replace(/[\s\-().]/g, "");
-  if (!cleanPhone) e.phone = "Введите телефон";
-  else if (!/^\+?\d{10,15}$/.test(cleanPhone))
-    e.phone = "Формат: +79001234567 (10–15 цифр)";
-  const cleanPassport = f.passport.replace(/\s/g, "");
-  if (!cleanPassport) e.passport = "Введите паспортные данные";
-  else if (!/^\d{10}$/.test(cleanPassport))
-    e.passport = "10 цифр: серия (4) + номер (6)";
-  if (!f.email.trim()) e.email = "Введите email";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email))
-    e.email = "Некорректный email";
-  if (!f.birth_date) e.birth_date = "Укажите дату рождения";
-  else {
-    const age = calcAge(f.birth_date);
-    if (age < 18) e.birth_date = "Клиент должен быть совершеннолетним (18+)";
-    if (age > 120) e.birth_date = "Некорректная дата рождения";
-  }
-  return e;
-}
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function Pagination({ page, pages, onPageChange }) {
-  if (pages <= 1) return null;
-  const nums = Array.from({ length: pages }, (_, i) => i + 1);
-  return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        ‹
-      </button>
-      {nums.map((n) => (
-        <button
-          key={n}
-          type="button"
-          onClick={() => onPageChange(n)}
-          className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold ${
-            n === page
-              ? "bg-brand-500 text-white"
-              : "border border-slate-200 text-slate-700"
-          }`}
-        >
-          {n}
-        </button>
-      ))}
-      <button
-        type="button"
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= pages}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        ›
-      </button>
-    </div>
-  );
-}
-
-const initialForm = {
-  full_name: "",
-  phone: "",
-  passport: "",
-  email: "",
-  birth_date: "",
+const clientSchema = {
+  full_name: (val) => {
+    const v = String(val ?? "").trim();
+    if (!v || v.length < 2) return "Введите ФИО (минимум 2 символа)";
+    return null;
+  },
+  phone: (val) => {
+    const clean = String(val ?? "").replace(/[\s\-().]/g, "");
+    if (!clean) return "Введите телефон";
+    if (!/^\+?\d{10,15}$/.test(clean)) return "Формат: +79001234567 (10–15 цифр)";
+    return null;
+  },
+  passport: (val) => {
+    const clean = String(val ?? "").replace(/\s/g, "");
+    if (!clean) return "Введите паспортные данные";
+    if (!/^\d{10}$/.test(clean)) return "10 цифр: серия (4) + номер (6)";
+    return null;
+  },
+  email: chain(required("Введите email"), pattern(EMAIL_RE, "Некорректный email")),
+  birth_date: (val) => {
+    if (!val) return "Укажите дату рождения";
+    const age = calcAge(val);
+    if (age < 18) return "Клиент должен быть совершеннолетним (18+)";
+    if (age > 120) return "Некорректная дата рождения";
+    return null;
+  },
 };
-
-function ClientFormFields({
-  form,
-  touched,
-  errors,
-  onChange,
-  onBlur,
-  loading,
-}) {
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <CircularProgress size={32} />
-      </div>
-    );
-  }
-  return (
-    <div className="space-y-4">
-      <TextField
-        fullWidth
-        label="ФИО"
-        name="full_name"
-        value={form.full_name}
-        onChange={onChange}
-        onBlur={onBlur}
-        error={Boolean(touched.full_name && errors.full_name)}
-        helperText={
-          touched.full_name && errors.full_name ? errors.full_name : " "
-        }
-        placeholder="Иванов Иван Иванович"
-      />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <TextField
-          fullWidth
-          label="Телефон"
-          name="phone"
-          value={form.phone}
-          onChange={onChange}
-          onBlur={onBlur}
-          error={Boolean(touched.phone && errors.phone)}
-          helperText={touched.phone && errors.phone ? errors.phone : " "}
-          placeholder="+79001234567"
-        />
-        <TextField
-          fullWidth
-          label="Email"
-          name="email"
-          value={form.email}
-          type="email"
-          onChange={onChange}
-          onBlur={onBlur}
-          error={Boolean(touched.email && errors.email)}
-          helperText={touched.email && errors.email ? errors.email : " "}
-        />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <TextField
-          fullWidth
-          label="Паспорт"
-          name="passport"
-          value={form.passport}
-          onChange={onChange}
-          onBlur={onBlur}
-          error={Boolean(touched.passport && errors.passport)}
-          helperText={
-            touched.passport && errors.passport
-              ? errors.passport
-              : "Серия и номер, 10 цифр"
-          }
-          placeholder="1234 567890"
-        />
-        <TextField
-          fullWidth
-          label=""
-          name="birth_date"
-          value={form.birth_date}
-          type="date"
-          onChange={onChange}
-          onBlur={onBlur}
-          slotProps={{ inputLabel: { shrink: true } }}
-          inputProps={{ max: todayMinus(18), min: todayMinus(120) }}
-          error={Boolean(touched.birth_date && errors.birth_date)}
-          helperText={
-            touched.birth_date && errors.birth_date
-              ? errors.birth_date
-              : "Клиент должен быть 18+"
-          }
-        />
-      </div>
-    </div>
-  );
-}
 
 function DeleteDialog({ open, name, status, error, onConfirm, onClose }) {
   return (
@@ -360,12 +149,7 @@ function SummaryCard({ label, value, colorClass, loading }) {
         <div
           className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${colorClass}`}
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            className="h-6 w-6"
-            aria-hidden="true"
-          >
+          <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
             <path
               d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M12 11a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"
               stroke="currentColor"
@@ -379,16 +163,103 @@ function SummaryCard({ label, value, colorClass, loading }) {
           {loading ? (
             <CircularProgress size={28} />
           ) : (
-            <div className="text-4xl font-black tracking-tight text-slate-950">
-              {value}
-            </div>
+            <div className="text-4xl font-black tracking-tight text-slate-950">{value}</div>
           )}
-          <div className="mt-1 text-lg font-semibold text-slate-500">
-            {label}
-          </div>
+          <div className="mt-1 text-lg font-semibold text-slate-500">{label}</div>
         </div>
       </div>
     </article>
+  );
+}
+
+const initialForm = {
+  full_name: "",
+  phone: "",
+  passport: "",
+  email: "",
+  birth_date: "",
+};
+
+function ClientFormFields({ form, touched, errors, onChange, onBlur, loading }) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <CircularProgress size={32} />
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-4">
+      <TextField
+        fullWidth
+        label="ФИО"
+        name="full_name"
+        value={form.full_name}
+        onChange={onChange}
+        onBlur={onBlur}
+        error={Boolean(touched.full_name && errors.full_name)}
+        helperText={touched.full_name && errors.full_name ? errors.full_name : " "}
+        placeholder="Иванов Иван Иванович"
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField
+          fullWidth
+          label="Телефон"
+          name="phone"
+          value={form.phone}
+          onChange={onChange}
+          onBlur={onBlur}
+          error={Boolean(touched.phone && errors.phone)}
+          helperText={touched.phone && errors.phone ? errors.phone : " "}
+          placeholder="+79001234567"
+        />
+        <TextField
+          fullWidth
+          label="Email"
+          name="email"
+          value={form.email}
+          type="email"
+          onChange={onChange}
+          onBlur={onBlur}
+          error={Boolean(touched.email && errors.email)}
+          helperText={touched.email && errors.email ? errors.email : " "}
+        />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField
+          fullWidth
+          label="Паспорт"
+          name="passport"
+          value={form.passport}
+          onChange={onChange}
+          onBlur={onBlur}
+          error={Boolean(touched.passport && errors.passport)}
+          helperText={
+            touched.passport && errors.passport ? errors.passport : "Серия и номер, 10 цифр"
+          }
+          placeholder="1234 567890"
+        />
+        <TextField
+          fullWidth
+          label="Дата рождения"
+          name="birth_date"
+          value={form.birth_date}
+          type="date"
+          onChange={onChange}
+          onBlur={onBlur}
+          slotProps={{
+            inputLabel: { shrink: true },
+            htmlInput: { max: todayMinus(18), min: todayMinus(120) },
+          }}
+          error={Boolean(touched.birth_date && errors.birth_date)}
+          helperText={
+            touched.birth_date && errors.birth_date
+              ? errors.birth_date
+              : "Клиент должен быть 18+"
+          }
+        />
+      </div>
+    </div>
   );
 }
 
@@ -415,8 +286,7 @@ export function ClientsPage() {
     deleteError,
   } = useSelector((s) => s.clients);
 
-  const isStaff =
-    currentUser?.role === "employee" || currentUser?.role === "admin";
+  const isStaff = currentUser?.role === "employee" || currentUser?.role === "admin";
   const isAdmin = currentUser?.role === "admin";
 
   const [search, setSearch] = useState("");
@@ -436,11 +306,8 @@ export function ClientsPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingClient, setDeletingClient] = useState(null);
 
-  const createErrors = useMemo(
-    () => validateClientForm(createForm),
-    [createForm],
-  );
-  const editErrors = useMemo(() => validateClientForm(editForm), [editForm]);
+  const createErrors = useMemo(() => validate(createForm, clientSchema), [createForm]);
+  const editErrors = useMemo(() => validate(editForm, clientSchema), [editForm]);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
@@ -488,11 +355,7 @@ export function ClientsPage() {
   }
   async function handleCreate() {
     setCreateTouched({
-      full_name: true,
-      phone: true,
-      passport: true,
-      email: true,
-      birth_date: true,
+      full_name: true, phone: true, passport: true, email: true, birth_date: true,
     });
     if (Object.keys(createErrors).length > 0) return;
     const result = await dispatch(
@@ -528,6 +391,7 @@ export function ClientsPage() {
         birth_date: data.birth_date,
       });
     } catch {
+      // error is shown by the form loading state
     } finally {
       setEditLoading(false);
     }
@@ -539,11 +403,7 @@ export function ClientsPage() {
   }
   async function handleEdit() {
     setEditTouched({
-      full_name: true,
-      phone: true,
-      passport: true,
-      email: true,
-      birth_date: true,
+      full_name: true, phone: true, passport: true, email: true, birth_date: true,
     });
     if (Object.keys(editErrors).length > 0) return;
     const result = await dispatch(
@@ -589,9 +449,7 @@ export function ClientsPage() {
             <Aside />
             <main className="flex flex-1 items-center justify-center px-8 py-12">
               <div className="text-center">
-                <div className="text-2xl font-extrabold text-slate-900">
-                  Нет доступа
-                </div>
+                <div className="text-2xl font-extrabold text-slate-900">Нет доступа</div>
                 <p className="mt-2 text-sm font-medium text-slate-500">
                   Этот раздел доступен только сотрудникам и администраторам.
                 </p>
@@ -610,14 +468,13 @@ export function ClientsPage() {
           <Aside />
 
           <main className="min-w-0 flex-1 px-4 py-4 sm:px-6 lg:px-8">
-            {/* Header */}
             <header className="flex flex-col gap-4 border-b border-slate-200/80 px-6 py-6 xl:flex-row xl:items-center xl:justify-between lg:px-10">
               <div className="flex min-w-0 flex-col gap-4 xl:flex-1 xl:flex-row xl:items-center">
                 <h1 className="shrink-0 text-3xl font-extrabold tracking-tight text-slate-950">
                   Клиенты
                 </h1>
                 <label className="flex w-full max-w-[420px] min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm shadow-slate-200/40 xl:flex-1">
-                  <SearchIcon />
+                  <SearchIcon className="h-5 w-5 text-slate-400" />
                   <input
                     type="text"
                     value={search}
@@ -633,14 +490,13 @@ export function ClientsPage() {
                 className="!min-w-[200px] shrink-0 !rounded-2xl !bg-brand-500 !px-5 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600"
               >
                 <span className="mr-2 inline-flex">
-                  <PlusIcon />
+                  <PlusIcon className="h-5 w-5" />
                 </span>
                 Добавить клиента
               </Button>
             </header>
 
             <div className="space-y-6 px-6 py-7 lg:px-10 lg:py-8">
-              {/* Summary cards */}
               <section className="grid gap-4 md:grid-cols-3">
                 <SummaryCard
                   label="Всего клиентов"
@@ -662,14 +518,10 @@ export function ClientsPage() {
                 />
               </section>
 
-              {/* Clients table */}
               <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
-                {/* Table header with tabs */}
                 <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 xl:flex-row xl:items-center xl:justify-between">
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
-                    <div className="text-2xl font-extrabold tracking-tight">
-                      Список клиентов
-                    </div>
+                    <div className="text-2xl font-extrabold tracking-tight">Список клиентов</div>
                     <div className="flex flex-wrap items-center gap-2">
                       {LOYALTY_TABS.map((tab) => (
                         <button
@@ -705,7 +557,6 @@ export function ClientsPage() {
                   </div>
                 )}
 
-                {/* Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[780px] border-collapse">
                     <thead className="bg-slate-50">
@@ -720,10 +571,7 @@ export function ClientsPage() {
                     </thead>
                     <tbody>
                       {clients.map((client) => (
-                        <tr
-                          key={client.id}
-                          className="border-t border-slate-100 align-middle"
-                        >
+                        <tr key={client.id} className="border-t border-slate-100 align-middle">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div
@@ -733,9 +581,7 @@ export function ClientsPage() {
                               </div>
                               <button
                                 type="button"
-                                onClick={() =>
-                                  navigate(`/clients/${client.id}`)
-                                }
+                                onClick={() => navigate(`/clients/${client.id}`)}
                                 className="text-left"
                               >
                                 <div className="text-sm font-bold text-slate-900 hover:text-brand-600 hover:underline transition-colors">
@@ -777,7 +623,7 @@ export function ClientsPage() {
                                 className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-brand-600"
                                 title="Редактировать"
                               >
-                                <EditIcon />
+                                <EditIcon className="h-4 w-4" />
                               </button>
                               {isAdmin && (
                                 <button
@@ -786,7 +632,7 @@ export function ClientsPage() {
                                   className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
                                   title="Удалить"
                                 >
-                                  <TrashIcon />
+                                  <TrashIcon className="h-4 w-4" />
                                 </button>
                               )}
                             </div>
@@ -809,7 +655,6 @@ export function ClientsPage() {
                   </table>
                 </div>
 
-                {/* Pagination */}
                 <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4">
                   <div className="text-sm font-medium text-slate-500">
                     {listStatus === "loading" ? (
@@ -823,11 +668,7 @@ export function ClientsPage() {
                       ""
                     )}
                   </div>
-                  <Pagination
-                    page={page}
-                    pages={pages}
-                    onPageChange={handlePageChange}
-                  />
+                  <Pagination page={page} pages={pages} onPageChange={handlePageChange} />
                 </div>
               </section>
             </div>
@@ -854,10 +695,7 @@ export function ClientsPage() {
               touched={createTouched}
               errors={createErrors}
               onChange={(e) =>
-                setCreateForm((p) => ({
-                  ...p,
-                  [e.target.name]: e.target.value,
-                }))
+                setCreateForm((p) => ({ ...p, [e.target.name]: e.target.value }))
               }
               onBlur={(e) =>
                 setCreateTouched((p) => ({ ...p, [e.target.name]: true }))

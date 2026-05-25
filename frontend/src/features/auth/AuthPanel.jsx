@@ -8,6 +8,7 @@ import {
   loginUser,
   registerUser,
 } from "./authSlice";
+import { chain, match, minLength, required, validate } from "../../shared/lib/validate";
 
 const initialRegisterForm = {
   email: "",
@@ -22,52 +23,26 @@ const initialLoginForm = {
   password: "",
 };
 
-function validateRegisterForm(values) {
-  const errors = {};
+const registerSchema = {
+  email: required("Введите email"),
+  first_name: required("Введите имя"),
+  password: chain(required("Введите пароль"), minLength(8, "Минимум 8 символов")),
+  password_confirm: chain(
+    required("Подтвердите пароль"),
+    match("password", "Пароли не совпадают"),
+  ),
+};
 
-  if (!values.email.trim()) {
-    errors.email = "Введите email";
-  }
-
-  if (!values.first_name.trim()) {
-    errors.first_name = "Введите имя";
-  }
-
-  if (!values.password) {
-    errors.password = "Введите пароль";
-  } else if (values.password.length < 8) {
-    errors.password = "Минимум 8 символов";
-  }
-
-  if (!values.password_confirm) {
-    errors.password_confirm = "Подтвердите пароль";
-  } else if (values.password !== values.password_confirm) {
-    errors.password_confirm = "Пароли не совпадают";
-  }
-
-  return errors;
-}
-
-function validateLoginForm(values) {
-  const errors = {};
-
-  if (!values.email.trim()) {
-    errors.email = "Введите email";
-  }
-
-  if (!values.password) {
-    errors.password = "Введите пароль";
-  }
-
-  return errors;
-}
+const loginSchema = {
+  email: required("Введите email"),
+  password: required("Введите пароль"),
+};
 
 export function AuthPanel({
   initialMode = "register",
   onSuccess,
   hideTabs = false,
   showHomeLink = false,
-  compact = false,
 }) {
   const dispatch = useDispatch();
   const {
@@ -82,23 +57,15 @@ export function AuthPanel({
   const [touched, setTouched] = useState({});
 
   useEffect(() => {
-    setMode(initialMode);
-    setTouched({});
-  }, [initialMode]);
-
-  useEffect(() => {
     return () => {
       dispatch(clearRegisterError());
       dispatch(clearLoginError());
     };
   }, [dispatch]);
 
-  const registerErrors = useMemo(
-    () => validateRegisterForm(registerForm),
-    [registerForm],
-  );
-  const loginErrors = useMemo(() => validateLoginForm(loginForm), [loginForm]);
   const isRegisterMode = mode === "register";
+  const registerErrors = useMemo(() => validate(registerForm, registerSchema), [registerForm]);
+  const loginErrors = useMemo(() => validate(loginForm, loginSchema), [loginForm]);
   const activeErrors = isRegisterMode ? registerErrors : loginErrors;
   const isSubmitting =
     isRegisterMode ? registerStatus === "loading" : loginStatus === "loading";
@@ -113,84 +80,47 @@ export function AuthPanel({
 
   function handleRegisterChange(event) {
     const { name, value } = event.target;
-
-    setRegisterForm((current) => ({
-      ...current,
-      [name]: value,
-    }));
+    setRegisterForm((current) => ({ ...current, [name]: value }));
   }
 
   function handleLoginChange(event) {
     const { name, value } = event.target;
-
-    setLoginForm((current) => ({
-      ...current,
-      [name]: value,
-    }));
+    setLoginForm((current) => ({ ...current, [name]: value }));
   }
 
   function handleBlur(event) {
     const { name } = event.target;
-
-    setTouched((current) => ({
-      ...current,
-      [name]: true,
-    }));
+    setTouched((current) => ({ ...current, [name]: true }));
   }
 
   async function handleRegisterSubmit(event) {
     event.preventDefault();
-
-    const nextTouched = Object.keys(registerForm).reduce((acc, key) => {
-      acc[key] = true;
-      return acc;
-    }, {});
-
-    setTouched(nextTouched);
+    setTouched(
+      Object.keys(registerForm).reduce((acc, k) => ({ ...acc, [k]: true }), {}),
+    );
     dispatch(clearRegisterError());
-
-    if (Object.keys(registerErrors).length > 0) {
-      return;
-    }
-
-    const payload = {
-      email: registerForm.email.trim(),
-      first_name: registerForm.first_name.trim(),
-      last_name: registerForm.last_name.trim() || null,
-      password: registerForm.password,
-      password_confirm: registerForm.password_confirm,
-    };
-
-    const resultAction = await dispatch(registerUser(payload));
-
-    if (registerUser.fulfilled.match(resultAction)) {
-      onSuccess?.();
-    }
+    if (Object.keys(registerErrors).length > 0) return;
+    const resultAction = await dispatch(
+      registerUser({
+        email: registerForm.email.trim(),
+        first_name: registerForm.first_name.trim(),
+        last_name: registerForm.last_name.trim() || null,
+        password: registerForm.password,
+        password_confirm: registerForm.password_confirm,
+      }),
+    );
+    if (registerUser.fulfilled.match(resultAction)) onSuccess?.();
   }
 
   async function handleLoginSubmit(event) {
     event.preventDefault();
-
-    setTouched({
-      email: true,
-      password: true,
-    });
+    setTouched({ email: true, password: true });
     dispatch(clearLoginError());
-
-    if (Object.keys(loginErrors).length > 0) {
-      return;
-    }
-
+    if (Object.keys(loginErrors).length > 0) return;
     const resultAction = await dispatch(
-      loginUser({
-        email: loginForm.email,
-        password: loginForm.password,
-      }),
+      loginUser({ email: loginForm.email, password: loginForm.password }),
     );
-
-    if (loginUser.fulfilled.match(resultAction)) {
-      onSuccess?.();
-    }
+    if (loginUser.fulfilled.match(resultAction)) onSuccess?.();
   }
 
   return (
@@ -268,7 +198,6 @@ export function AuthPanel({
                   : " "
               }
             />
-
             <TextField
               fullWidth
               label="Фамилия"
@@ -340,7 +269,7 @@ export function AuthPanel({
       </div>
 
       {showHomeLink ? (
-        <div className={`text-sm font-semibold text-slate-600 ${compact ? "mt-3" : "mt-3"}`}>
+        <div className="mt-3 text-sm font-semibold text-slate-600">
           <Link to="/" className="text-brand-500 no-underline">
             Вернуться на главную
           </Link>

@@ -35,21 +35,8 @@ import {
   updateHotel,
 } from "../features/catalog/catalogSlice";
 import { fetchCities } from "../features/travel/travelSlice";
-
-function ViewIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path
-        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  );
-}
+import { EditIcon, PlusIcon, TrashIcon, ViewIcon } from "../shared/ui/Icons";
+import { Pagination } from "../shared/ui/Pagination";
 
 function InfoRow({ label, value }) {
   return (
@@ -64,92 +51,12 @@ function InfoRow({ label, value }) {
   );
 }
 
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-      <path
-        d="M12 5v14M5 12h14"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function EditIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path
-        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path
-        d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function Stars({ count }) {
   return (
     <span className="text-amber-400">
       {"★".repeat(count)}
       <span className="text-slate-200">{"★".repeat(5 - count)}</span>
     </span>
-  );
-}
-
-function Pagination({ page, pages, onPageChange }) {
-  if (pages <= 1) return null;
-  const nums = Array.from({ length: pages }, (_, i) => i + 1);
-  return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        ‹
-      </button>
-      {nums.map((n) => (
-        <button
-          key={n}
-          type="button"
-          onClick={() => onPageChange(n)}
-          className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold ${
-            n === page
-              ? "bg-brand-500 text-white"
-              : "border border-slate-200 text-slate-700"
-          }`}
-        >
-          {n}
-        </button>
-      ))}
-      <button
-        type="button"
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= pages}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        ›
-      </button>
-    </div>
   );
 }
 
@@ -468,7 +375,7 @@ function CitiesTab({ isStaff, isAdmin }) {
                     className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-sky-50 hover:text-sky-600"
                     title="Просмотреть"
                   >
-                    <ViewIcon />
+                    <ViewIcon size={16} />
                   </button>
                   {isStaff && (
                     <button
@@ -477,7 +384,7 @@ function CitiesTab({ isStaff, isAdmin }) {
                       className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-brand-600"
                       title="Редактировать"
                     >
-                      <EditIcon />
+                      <EditIcon size={16} />
                     </button>
                   )}
                   {isAdmin && (
@@ -487,7 +394,7 @@ function CitiesTab({ isStaff, isAdmin }) {
                       className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
                       title="Удалить"
                     >
-                      <TrashIcon />
+                      <TrashIcon size={16} />
                     </button>
                   )}
                 </div>
@@ -1032,7 +939,7 @@ function HotelsTab({ isStaff, isAdmin }) {
                     className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-sky-50 hover:text-sky-600"
                     title="Просмотреть"
                   >
-                    <ViewIcon />
+                    <ViewIcon size={16} />
                   </button>
                   {isStaff && (
                     <button
@@ -1041,7 +948,7 @@ function HotelsTab({ isStaff, isAdmin }) {
                       className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-brand-600"
                       title="Редактировать"
                     >
-                      <EditIcon />
+                      <EditIcon size={16} />
                     </button>
                   )}
                   {isAdmin && (
@@ -1051,7 +958,7 @@ function HotelsTab({ isStaff, isAdmin }) {
                       className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
                       title="Удалить"
                     >
-                      <TrashIcon />
+                      <TrashIcon size={16} />
                     </button>
                   )}
                 </div>

@@ -1,8 +1,9 @@
 import { CircularProgress } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Aside from "../features/components/Aside";
 import { http } from "../shared/api/http";
+import { formatDate, formatMoney } from "../shared/lib/format";
 
 const MEAL_LABELS = {
   none: "Без питания",
@@ -21,17 +22,6 @@ const STATUS_CLASSES = {
   active: "bg-emerald-100 text-emerald-700",
   archived: "bg-slate-200 text-slate-500",
 };
-
-function formatDate(dateStr) {
-  if (!dateStr) return "—";
-  const [y, m, d] = String(dateStr).split("-");
-  return `${d}.${m}.${y}`;
-}
-
-function formatMoney(value) {
-  if (value === undefined || value === null) return "—";
-  return `${Number(value).toLocaleString("ru-RU")} ₽`;
-}
 
 function BackIcon() {
   return (
@@ -72,18 +62,17 @@ function StarRating({ stars }) {
 export function TourDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [tour, setTour] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [{ tour, loading, error }, dispatch] = useReducer(
+    (_, next) => next,
+    { tour: null, loading: true, error: null },
+  );
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
+    dispatch({ tour: null, loading: true, error: null });
     http
       .get(`/v1/tours/${id}`)
-      .then(({ data }) => setTour(data))
-      .catch(() => setError("Не удалось загрузить тур."))
-      .finally(() => setLoading(false));
+      .then(({ data }) => dispatch({ tour: data, loading: false, error: null }))
+      .catch(() => dispatch({ tour: null, loading: false, error: "Не удалось загрузить тур." }));
   }, [id]);
 
   return (

@@ -10,9 +10,29 @@ import {
   logoutUser,
   updateCurrentUser,
 } from "../features/auth/authSlice";
+import { formatDateTime } from "../shared/lib/format";
+import { chain, match, minLength, pattern, required, validate } from "../shared/lib/validate";
 
-const PASSWORD_SPECIAL_RE = /[!@#$%^&*()\-_=+[\]{};:'",.<>?/\\|`~]/;
 const PASSWORD_DIGIT_RE = /\d/;
+const PASSWORD_SPECIAL_RE = /[!@#$%^&*()\-_=+[\]{};:'",.<>?/\\|`~]/;
+
+const profileSchema = {
+  first_name: required("Введите имя"),
+};
+
+const passwordSchema = {
+  current_password: required("Введите текущий пароль"),
+  new_password: chain(
+    required("Введите новый пароль"),
+    minLength(8, "Минимум 8 символов"),
+    pattern(PASSWORD_DIGIT_RE, "Пароль должен содержать хотя бы одну цифру"),
+    pattern(PASSWORD_SPECIAL_RE, "Пароль должен содержать хотя бы один спецсимвол"),
+  ),
+  new_password_confirm: chain(
+    required("Подтвердите новый пароль"),
+    match("new_password", "Пароли не совпадают"),
+  ),
+};
 
 const initialPasswordForm = {
   current_password: "",
@@ -20,53 +40,13 @@ const initialPasswordForm = {
   new_password_confirm: "",
 };
 
-function validatePasswordForm(values) {
-  const errors = {};
-
-  if (!values.current_password) {
-    errors.current_password = "Введите текущий пароль";
-  }
-
-  if (!values.new_password) {
-    errors.new_password = "Введите новый пароль";
-  } else if (values.new_password.length < 8) {
-    errors.new_password = "Минимум 8 символов";
-  } else if (!PASSWORD_DIGIT_RE.test(values.new_password)) {
-    errors.new_password = "Пароль должен содержать хотя бы одну цифру";
-  } else if (!PASSWORD_SPECIAL_RE.test(values.new_password)) {
-    errors.new_password = "Пароль должен содержать хотя бы один спецсимвол";
-  }
-
-  if (!values.new_password_confirm) {
-    errors.new_password_confirm = "Подтвердите новый пароль";
-  } else if (values.new_password !== values.new_password_confirm) {
-    errors.new_password_confirm = "Пароли не совпадают";
-  }
-
-  return errors;
-}
+const ROLE_LABELS = {
+  admin: "Администратор",
+  employee: "Сотрудник",
+};
 
 function formatRole(role) {
-  if (role === "admin") {
-    return "Администратор";
-  }
-
-  if (role === "employee") {
-    return "Сотрудник";
-  }
-
-  return "Менеджер";
-}
-
-function formatDate(value) {
-  if (!value) {
-    return "Не указано";
-  }
-
-  return new Intl.DateTimeFormat("ru-RU", {
-    dateStyle: "long",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return ROLE_LABELS[role] ?? "Менеджер";
 }
 
 export function ProfilePage() {
@@ -100,69 +80,39 @@ export function ProfilePage() {
     [currentUser, draft],
   );
 
-  const errors = useMemo(() => {
-    const nextErrors = {};
-
-    if (!form.first_name.trim()) {
-      nextErrors.first_name = "Введите имя";
-    }
-
-    return nextErrors;
-  }, [form]);
-
+  const errors = useMemo(() => validate(form, profileSchema), [form]);
+  const passwordErrors = useMemo(() => validate(passwordForm, passwordSchema), [passwordForm]);
   const isSaving = profileUpdateStatus === "loading";
   const isChangingPassword = passwordChangeStatus === "loading";
-  const passwordErrors = useMemo(() => validatePasswordForm(passwordForm), [passwordForm]);
 
   function handleChange(event) {
     const { name, value } = event.target;
-
-    setDraft((currentDraft) => ({
-      ...(currentDraft ?? form),
-      [name]: value,
-    }));
+    setDraft((currentDraft) => ({ ...(currentDraft ?? form), [name]: value }));
   }
 
   function handleBlur(event) {
     const { name } = event.target;
-
-    setTouched((current) => ({
-      ...current,
-      [name]: true,
-    }));
+    setTouched((current) => ({ ...current, [name]: true }));
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
-
-    setTouched({
-      first_name: true,
-      last_name: true,
-    });
+    setTouched({ first_name: true, last_name: true });
     dispatch(clearProfileError());
-
-    if (Object.keys(errors).length > 0) {
-      return;
-    }
-
+    if (Object.keys(errors).length > 0) return;
     const resultAction = await dispatch(
       updateCurrentUser({
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim() || null,
       }),
     );
-
-    if (updateCurrentUser.fulfilled.match(resultAction)) {
-      setDraft(null);
-    }
+    if (updateCurrentUser.fulfilled.match(resultAction)) setDraft(null);
   }
 
   function handlePasswordChange(event) {
     const { name, value } = event.target;
     setPasswordForm((current) => ({ ...current, [name]: value }));
-    if (passwordChangeStatus === "succeeded") {
-      dispatch(clearPasswordChangeState());
-    }
+    if (passwordChangeStatus === "succeeded") dispatch(clearPasswordChangeState());
   }
 
   function handlePasswordBlur(event) {
@@ -172,19 +122,13 @@ export function ProfilePage() {
 
   async function handlePasswordSubmit(event) {
     event.preventDefault();
-
     setPasswordTouched({
       current_password: true,
       new_password: true,
       new_password_confirm: true,
     });
-
-    if (Object.keys(passwordErrors).length > 0) {
-      return;
-    }
-
+    if (Object.keys(passwordErrors).length > 0) return;
     const resultAction = await dispatch(changePassword(passwordForm));
-
     if (changePassword.fulfilled.match(resultAction)) {
       setPasswordForm(initialPasswordForm);
       setPasswordTouched({});
@@ -309,7 +253,7 @@ export function ProfilePage() {
                       Дата регистрации
                     </div>
                     <div className="mt-2 text-base font-semibold text-slate-800">
-                      {formatDate(currentUser?.created_at)}
+                      {formatDateTime(currentUser?.created_at)}
                     </div>
                   </div>
 
@@ -318,7 +262,7 @@ export function ProfilePage() {
                       Последний вход
                     </div>
                     <div className="mt-2 text-base font-semibold text-slate-800">
-                      {formatDate(currentUser?.last_login_at)}
+                      {formatDateTime(currentUser?.last_login_at)}
                     </div>
                   </div>
                 </div>
@@ -351,7 +295,9 @@ export function ProfilePage() {
                       value={passwordForm.current_password}
                       onChange={handlePasswordChange}
                       onBlur={handlePasswordBlur}
-                      error={Boolean(passwordTouched.current_password && passwordErrors.current_password)}
+                      error={Boolean(
+                        passwordTouched.current_password && passwordErrors.current_password,
+                      )}
                       helperText={
                         passwordTouched.current_password && passwordErrors.current_password
                           ? passwordErrors.current_password
@@ -383,9 +329,13 @@ export function ProfilePage() {
                       value={passwordForm.new_password_confirm}
                       onChange={handlePasswordChange}
                       onBlur={handlePasswordBlur}
-                      error={Boolean(passwordTouched.new_password_confirm && passwordErrors.new_password_confirm)}
+                      error={Boolean(
+                        passwordTouched.new_password_confirm &&
+                          passwordErrors.new_password_confirm,
+                      )}
                       helperText={
-                        passwordTouched.new_password_confirm && passwordErrors.new_password_confirm
+                        passwordTouched.new_password_confirm &&
+                        passwordErrors.new_password_confirm
                           ? passwordErrors.new_password_confirm
                           : " "
                       }

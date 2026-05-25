@@ -24,15 +24,11 @@ import {
   fetchUsers,
   updateUser,
 } from "../features/users/usersSlice";
-
-function ViewIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  );
-}
+import { getAvatarColor, getInitials } from "../shared/lib/avatar";
+import { formatDate } from "../shared/lib/format";
+import { chain, match, minLength, pattern, required, validate } from "../shared/lib/validate";
+import { EditIcon, ViewIcon } from "../shared/ui/Icons";
+import { Pagination } from "../shared/ui/Pagination";
 
 function InfoRow({ label, value }) {
   return (
@@ -62,85 +58,31 @@ const ROLE_TABS = [
   { id: "admin", label: "Администраторы" },
 ];
 
-const AVATAR_PALETTE = [
-  "bg-brand-500", "bg-emerald-500", "bg-violet-500",
-  "bg-amber-500", "bg-rose-500", "bg-sky-600", "bg-teal-500", "bg-purple-500",
-];
-
 const PAGE_SIZE = 20;
 
-function getInitials(user) {
-  const first = user.first_name?.[0]?.toUpperCase() ?? "";
-  const last = user.last_name?.[0]?.toUpperCase() ?? "";
-  return first + last || "?";
-}
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DIGIT_RE = /\d/;
+const SPECIAL_RE = /[!@#$%^&*()\-_=+[\]{};:'",.<>?/\\|`~]/;
 
-function getAvatarColor(id) {
-  const n = id ? parseInt(id.replace(/-/g, "").slice(0, 8), 16) : 0;
-  return AVATAR_PALETTE[n % AVATAR_PALETTE.length];
-}
+const createUserSchema = {
+  first_name: required("Введите имя"),
+  email: chain(required("Введите email"), pattern(EMAIL_RE, "Некорректный email")),
+  password: chain(
+    required("Введите пароль"),
+    minLength(8, "Минимум 8 символов"),
+    pattern(DIGIT_RE, "Пароль должен содержать цифру"),
+    pattern(SPECIAL_RE, "Пароль должен содержать спец. символ"),
+  ),
+  password_confirm: chain(
+    required("Подтвердите пароль"),
+    match("password", "Пароли не совпадают"),
+  ),
+};
 
-function formatDate(dateStr) {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("ru-RU", {
-    day: "2-digit", month: "2-digit", year: "numeric",
-  });
-}
-
-const SPECIAL_CHARS = /[!@#$%^&*()\-_=+[\]{};:'",.<>?/\\|`~]/;
-
-function validateCreateForm(f) {
-  const e = {};
-  if (!f.first_name.trim()) e.first_name = "Введите имя";
-  if (!f.email.trim()) e.email = "Введите email";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) e.email = "Некорректный email";
-  if (!f.password) e.password = "Введите пароль";
-  else if (f.password.length < 8) e.password = "Минимум 8 символов";
-  else if (!/\d/.test(f.password)) e.password = "Пароль должен содержать цифру";
-  else if (!SPECIAL_CHARS.test(f.password)) e.password = "Пароль должен содержать спец. символ";
-  if (!f.password_confirm) e.password_confirm = "Подтвердите пароль";
-  else if (f.password !== f.password_confirm) e.password_confirm = "Пароли не совпадают";
-  return e;
-}
-
-function validateEditForm(f) {
-  const e = {};
-  if (f.first_name !== undefined && f.first_name.trim() === "") {
-    e.first_name = "Имя не может быть пустым";
-  }
-  return e;
-}
-
-function Pagination({ page, pages, onPageChange }) {
-  if (pages <= 1) return null;
-  const nums = Array.from({ length: pages }, (_, i) => i + 1);
-  return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-      >‹</button>
-      {nums.map((n) => (
-        <button
-          key={n}
-          type="button"
-          onClick={() => onPageChange(n)}
-          className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold ${
-            n === page ? "bg-brand-500 text-white" : "border border-slate-200 text-slate-700"
-          }`}
-        >{n}</button>
-      ))}
-      <button
-        type="button"
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= pages}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-lg font-bold text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
-      >›</button>
-    </div>
-  );
-}
+const editUserSchema = {
+  first_name: (val) =>
+    String(val ?? "").trim() === "" ? "Имя не может быть пустым" : null,
+};
 
 function DeactivateDialog({ open, name, status, error, onConfirm, onClose }) {
   return (
@@ -284,8 +226,8 @@ export function UsersPage() {
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [deactivatingUser, setDeactivatingUser] = useState(null);
 
-  const createErrors = useMemo(() => validateCreateForm(createForm), [createForm]);
-  const editErrors = useMemo(() => validateEditForm(editForm), [editForm]);
+  const createErrors = useMemo(() => validate(createForm, createUserSchema), [createForm]);
+  const editErrors = useMemo(() => validate(editForm, editUserSchema), [editForm]);
 
   useEffect(() => {
     dispatch(fetchUsers({ activeOnly }));
@@ -409,7 +351,6 @@ export function UsersPage() {
           <Aside />
 
           <main className="min-w-0 flex-1 px-4 py-4 sm:px-6 lg:px-8">
-            {/* Header */}
             <header className="flex flex-col gap-4 border-b border-slate-200/80 px-6 py-6 xl:flex-row xl:items-center xl:justify-between lg:px-10">
               <h1 className="shrink-0 text-3xl font-extrabold tracking-tight text-slate-950">
                 Пользователи
@@ -431,7 +372,6 @@ export function UsersPage() {
             </header>
 
             <div className="space-y-6 px-6 py-7 lg:px-10 lg:py-8">
-              {/* Filters */}
               <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
                 <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 xl:flex-row xl:items-center xl:justify-between">
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
@@ -476,7 +416,6 @@ export function UsersPage() {
                   <div className="px-6 py-4"><Alert severity="error">{listError}</Alert></div>
                 )}
 
-                {/* Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[680px] border-collapse">
                     <thead className="bg-slate-50">
@@ -495,7 +434,7 @@ export function UsersPage() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-black text-white ${getAvatarColor(user.id)}`}>
-                                {getInitials(user)}
+                                {getInitials(`${user.first_name} ${user.last_name ?? ""}`)}
                               </div>
                               <div className="text-sm font-bold text-slate-900">
                                 {user.first_name} {user.last_name ?? ""}
@@ -527,7 +466,7 @@ export function UsersPage() {
                                 className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-sky-50 hover:text-sky-600"
                                 title="Просмотреть"
                               >
-                                <ViewIcon />
+                                <ViewIcon className="h-4 w-4" />
                               </button>
                               {isAdmin && (
                                 <>
@@ -537,10 +476,7 @@ export function UsersPage() {
                                     className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-brand-600"
                                     title="Редактировать"
                                   >
-                                    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-                                      <path d="m4 20 4.2-1 9.5-9.5a2.12 2.12 0 0 0-3-3L5.2 16 4 20ZM13.5 7.5l3 3"
-                                        stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
+                                    <EditIcon className="h-4 w-4" />
                                   </button>
                                   {currentUser?.id !== user.id && (
                                     <button
@@ -572,7 +508,6 @@ export function UsersPage() {
                   </table>
                 </div>
 
-                {/* Pagination */}
                 <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4">
                   <div className="text-sm font-medium text-slate-500">
                     {listStatus !== "loading" && filtered.length > 0
@@ -651,7 +586,6 @@ export function UsersPage() {
         status={deactivateStatus} error={deactivateError}
         onConfirm={handleDeactivate} onClose={closeDeactivate}
       />
-
     </div>
   );
 }

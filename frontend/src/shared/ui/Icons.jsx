@@ -249,6 +249,55 @@ export function AverageBillIcon(props) {
   );
 }
 
+export function SearchIcon(props) {
+  return (
+    <IconBase viewBox="0 0 24 24" strokeLinecap="round" {...props}>
+      <path d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" />
+    </IconBase>
+  );
+}
+
+export function PlusIcon(props) {
+  return (
+    <IconBase viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" {...props}>
+      <path d="M12 5v14M5 12h14" />
+    </IconBase>
+  );
+}
+
+export function EditIcon(props) {
+  return (
+    <IconBase viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="m4 20 4.2-1 9.5-9.5a2.12 2.12 0 0 0-3-3L5.2 16 4 20ZM13.5 7.5l3 3" />
+    </IconBase>
+  );
+}
+
+export function TrashIcon(props) {
+  return (
+    <IconBase viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+    </IconBase>
+  );
+}
+
+export function CalendarIcon(props) {
+  return (
+    <IconBase viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+    </IconBase>
+  );
+}
+
+export function ViewIcon(props) {
+  return (
+    <IconBase viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </IconBase>
+  );
+}
+
 export function SalesLossIcon(props) {
   return (
     <IconBase viewBox="0 0 24 24" fill="none" {...props}>
