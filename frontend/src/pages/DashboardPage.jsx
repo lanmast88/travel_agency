@@ -1,6 +1,7 @@
 import { Button, Chip, CircularProgress } from "@mui/material";
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { fetchDashboardData } from "../features/dashboard/dashboardSlice";
 import {
   AnalyticsIcon,
@@ -26,6 +27,7 @@ const statIcons = {
 
 function DashboardContent() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const {
     status,
     salesTotal,
@@ -142,12 +144,14 @@ function DashboardContent() {
                   <Button
                     variant="contained"
                     className="!rounded-2xl !bg-brand-500 !px-6 !py-3 !text-sm !font-bold !normal-case !shadow-none hover:!bg-brand-600"
+                    onClick={() => navigate("/sales?open=create")}
                   >
                     + Новая продажа
                   </Button>
                   <Button
                     variant="outlined"
                     className="!rounded-2xl !border-slate-200 !px-6 !py-3 !text-sm !font-bold !normal-case !text-slate-800"
+                    onClick={() => navigate("/travels?open=create")}
                   >
                     + Добавить путёвку
                   </Button>

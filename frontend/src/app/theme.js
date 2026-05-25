@@ -15,6 +15,6 @@ export const muiTheme = createTheme({
     borderRadius: 16,
   },
   typography: {
-    fontFamily: '"Manrope", "Segoe UI", sans-serif',
+    fontFamily: '"Plus Jakarta Sans", "Segoe UI", sans-serif',
   },
 })

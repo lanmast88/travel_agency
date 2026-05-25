@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Manrope", "Segoe UI", sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Segoe UI", sans-serif;
   --color-brand-50: #f3f7ff;
   --color-brand-100: #dbe8ff;
   --color-brand-500: #1f6fd6;

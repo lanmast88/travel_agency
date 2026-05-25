@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Aside from "../features/components/Aside";
 import {
   clearCreateTourState,
@@ -127,6 +127,7 @@ function TravelsPage() {
   const isAdmin = currentUser?.role === "admin";
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tourForm, setTourForm] = useState(initialTourForm);
   const [formTouched, setFormTouched] = useState({});
 
@@ -165,6 +166,13 @@ function TravelsPage() {
       dispatch(fetchCities());
     }
   }, [dispatch, travel.citiesStatus]);
+
+  useEffect(() => {
+    if (searchParams.get("open") === "create") {
+      setCreateDialogOpen(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (travel.hotelsStatus === "idle") {

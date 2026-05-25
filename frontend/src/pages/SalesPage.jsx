@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Aside from "../features/components/Aside";
 import {
   cancelSale,
@@ -368,9 +368,18 @@ export function SalesPage() {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancellingSale, setCancellingSale] = useState(null);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
     if (lookupsStatus === "idle") dispatch(fetchSalesLookups());
   }, [dispatch, lookupsStatus]);
+
+  useEffect(() => {
+    if (searchParams.get("open") === "create" && lookupsStatus === "succeeded") {
+      setCreateOpen(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, lookupsStatus, setSearchParams]);
 
   useEffect(() => {
     dispatch(fetchSales());
