@@ -19,7 +19,6 @@ async def init_producer() -> None:
     _producer = AIOKafkaProducer(
         bootstrap_servers=settings.kafka_bootstrap_servers,
         acks=settings.kafka_producer_acks,
-        retries=settings.kafka_producer_retries,
         value_serializer=lambda v: json.dumps(v).encode(),
     )
     await _producer.start()

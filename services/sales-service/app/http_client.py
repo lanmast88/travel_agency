@@ -18,7 +18,7 @@ class ClientServiceClient:
         self._token = token
 
     async def get_loyalty_level(self, client_id: uuid.UUID) -> LoyaltyLevel:
-        url = f"{settings.client_service_url}/clients/{client_id}/loyalty"
+        url = f"{settings.client_service_url}/api/v1/clients/{client_id}/loyalty"
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
                 response = await client.get(

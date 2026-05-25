@@ -34,20 +34,22 @@ function Aside() {
 
   return (
     <aside className="hidden w-[280px] shrink-0 border-r border-slate-200/80 bg-white/80 px-6 py-7 xl:flex xl:flex-col">
-      <div className="flex items-center gap-3 border-b border-slate-200 pb-6">
-        <div className="flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-50 ring-1 ring-brand-100">
-          <img
-            src="/logo.png"
-            alt="StackTravel Logo"
-            className="h-50 w-50 object-contain"
-          />
-        </div>
-        <div>
-          <div className="text-xl font-extrabold tracking-tight">
-            StackTravel
+      <div className="border-b border-slate-200 pb-6">
+        <NavLink to="/" className="flex items-center gap-3">
+          <div className="flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-50 ring-1 ring-brand-100">
+            <img
+              src="/logo.png"
+              alt="StackTravel Logo"
+              className="h-50 w-50 object-contain"
+            />
           </div>
-          <div className="text-sm text-slate-500">Внутренняя турсистема</div>
-        </div>
+          <div>
+            <div className="text-xl font-extrabold tracking-tight">
+              StackTravel
+            </div>
+            <div className="text-sm text-slate-500">Внутренняя турсистема</div>
+          </div>
+        </NavLink>
       </div>
 
       <nav className="mt-8 space-y-2">
@@ -77,7 +79,8 @@ function Aside() {
             ) : null}
           </NavLink>
         ))}
-        {(currentUser?.role === "admin" || currentUser?.role === "employee") && (
+        {(currentUser?.role === "admin" ||
+          currentUser?.role === "employee") && (
           <>
             <div className="px-3 text-xs font-bold uppercase tracking-[0.24em] text-slate-400">
               Администрирование

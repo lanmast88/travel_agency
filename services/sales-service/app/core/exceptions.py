@@ -15,7 +15,7 @@ class JwksUnavailableError(SalesServiceError):
 
 class NotFoundError(SalesServiceError):
     def __init__(self, entity: str, identifier: Any) -> None:
-        self.detail = f"{entity} {identifier!r} не найден"
+        self.detail = f"{entity} {identifier} не найден"
         super().__init__(self.detail)
 
 
