@@ -539,7 +539,7 @@ function TravelsPage() {
 
             <div className="space-y-6 px-6 py-7 lg:px-10 lg:py-8">
               <section className="rounded-[28px] border border-slate-200 bg-white px-6 py-6 shadow-sm shadow-slate-200/60">
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)_auto] md:grid-cols-2">
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1.2fr)_auto] md:grid-cols-2">
                   <div className="min-w-0 flex items-center gap-3">
                     <span className="shrink-0 text-sm font-bold text-slate-500">
                       Город
@@ -560,9 +560,9 @@ function TravelsPage() {
                     </select>
                   </div>
 
-                  <div className="min-w-0 flex items-center gap-3">
+                  <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
                     <span className="shrink-0 text-sm font-bold text-slate-500">
-                      Дата c
+                      Дата с
                     </span>
                     <label className="flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4">
                       <input
@@ -575,12 +575,7 @@ function TravelsPage() {
                       />
                       <CalendarIcon className="text-slate-500" />
                     </label>
-                  </div>
-
-                  <div className="min-w-0 flex items-center gap-3">
-                    <span className="shrink-0 text-sm font-bold text-slate-500">
-                      по
-                    </span>
+                    <span className="shrink-0 text-sm font-bold text-slate-500">по</span>
                     <label className="flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4">
                       <input
                         type="date"

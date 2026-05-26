@@ -151,7 +151,7 @@ function SummaryCard({ label, value, colorClass, loading }) {
         >
           <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
             <path
-              d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M12 11a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"
+              d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"
               stroke="currentColor"
               strokeWidth="1.9"
               strokeLinecap="round"
