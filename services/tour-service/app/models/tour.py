@@ -21,7 +21,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.core.enums import MealType, TourStatus
+from app.core.enums import MealType, TourCategory, TourStatus
+
+def _enum_values(x): return [e.value for e in x]
 
 
 class Tour(Base):
@@ -61,11 +63,19 @@ class Tour(Base):
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     available: Mapped[int] = mapped_column(Integer, default=0)
     meal_type: Mapped[MealType] = mapped_column(
-        Enum(MealType, name="mealtype"), default=MealType.none
+        Enum(MealType, name="mealtype", values_callable=_enum_values),
+        default=MealType.none,
     )
+    category: Mapped[TourCategory] = mapped_column(
+        Enum(TourCategory, name="tourcategory", values_callable=_enum_values),
+        default=TourCategory.comfort,
+    )
+    photo_url: Mapped[str | None] = mapped_column(String(500))
     # Новые туры создаются как черновики — менеджер явно публикует через PATCH /tours/{id}/publish
     status: Mapped[TourStatus] = mapped_column(
-        Enum(TourStatus, name="tourstatus"), default=TourStatus.draft, index=True
+        Enum(TourStatus, name="tourstatus", values_callable=_enum_values),
+        default=TourStatus.draft,
+        index=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(

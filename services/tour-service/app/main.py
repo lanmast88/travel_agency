@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.core.config import settings
-from app.core.database import check_db_connection
+from app.core.database import AsyncSessionFactory, check_db_connection
 from app.dependencies import (
     check_redis_health,
     close_jwks_client,
@@ -16,6 +16,7 @@ from app.dependencies import (
     init_redis,
 )
 from app.exception_handlers import register_exception_handlers
+from app.logic import recommender
 from app.logging_config import setup_logging
 from app.routers import cities, hotels, reviews, tours
 
@@ -27,7 +28,15 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("starting %s", settings.service_name)
     await init_redis()
-    await init_jwks_client()
+    try:
+        await init_jwks_client()
+    except Exception:
+        logger.warning("auth-service недоступен — JWT-верификация отключена до перезапуска")
+    async with AsyncSessionFactory() as session:
+        try:
+            await recommender.build(session)
+        except Exception:
+            logger.exception("Ошибка построения матрицы рекомендаций — сервис запущен без рекомендаций")
     yield
     await close_jwks_client()
     await close_redis()

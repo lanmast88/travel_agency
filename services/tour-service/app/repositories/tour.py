@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.enums import MealType, SortOrder, TourSortField, TourStatus
+from app.core.enums import MealType, SortOrder, TourCategory, TourSortField, TourStatus
 from app.models.tour import Tour
 from app.schemas.common import PaginationParams
 from app.schemas.tour import TourFilters
@@ -93,8 +93,10 @@ class TourRepository:
         price: Decimal,
         available: int,
         meal_type: MealType,
+        category: TourCategory = TourCategory.comfort,
         status: TourStatus = TourStatus.draft,
         description: str | None = None,
+        photo_url: str | None = None,
     ) -> Tour:
         tour = Tour(
             city_id=city_id,
@@ -105,8 +107,10 @@ class TourRepository:
             price=price,
             available=available,
             meal_type=meal_type,
+            category=category,
             status=status,
             description=description,
+            photo_url=photo_url,
         )
         self._session.add(tour)
         await self._session.flush()
@@ -152,5 +156,7 @@ def _build_filter_conditions(filters: TourFilters) -> list:
         conditions.append(Tour.start_date <= filters.start_date_to)
     if filters.meal_type is not None:
         conditions.append(Tour.meal_type == filters.meal_type)
+    if filters.category is not None:
+        conditions.append(Tour.category == filters.category)
 
     return conditions

@@ -39,9 +39,6 @@ class Settings(BaseSettings):
     redis_cache_db: int = 0
     tour_cache_ttl_seconds: int = 300
 
-    kafka_bootstrap_servers: list[str] = ["localhost:9092"]
-    kafka_tour_updates_topic: str = "tour_updated"
-
     cors_allowed_origins: list[str] = ["http://localhost:3000"]
     cors_allow_credentials: bool = True
 

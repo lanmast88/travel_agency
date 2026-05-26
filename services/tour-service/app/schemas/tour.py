@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.core.enums import MealType, SortOrder, TourSortField, TourStatus
+from app.core.enums import MealType, SortOrder, TourCategory, TourSortField, TourStatus
 from app.schemas.city import CityResponse
 from app.schemas.common import BaseUpdateSchema, normalize_str
 from app.schemas.hotel import HotelBriefResponse
@@ -20,6 +20,8 @@ class TourCreate(BaseModel):
     price: Decimal = Field(gt=0, decimal_places=2)
     available: int = Field(ge=0)
     meal_type: MealType = MealType.none
+    category: TourCategory = TourCategory.comfort
+    photo_url: str | None = Field(default=None, max_length=500)
     # Новые туры создаются как черновики — публикация через отдельный PATCH /publish
     status: TourStatus = TourStatus.draft
 
@@ -52,6 +54,8 @@ class TourUpdate(BaseUpdateSchema):
     price: Decimal | None = Field(default=None, gt=0, decimal_places=2)
     available: int | None = Field(default=None, ge=0)
     meal_type: MealType | None = None
+    category: TourCategory | None = None
+    photo_url: str | None = Field(default=None, max_length=500)
     status: TourStatus | None = None
 
     @field_validator("name", mode="before")
@@ -80,6 +84,8 @@ class TourResponse(BaseModel):
     price: Decimal
     available: int
     meal_type: MealType
+    category: TourCategory
+    photo_url: str | None
     status: TourStatus
     created_at: datetime
     # Вложенные объекты — репозиторий обязан загружать через selectinload()
@@ -102,12 +108,20 @@ class TourListItemResponse(BaseModel):
     price: Decimal
     available: int
     meal_type: MealType
+    category: TourCategory
+    photo_url: str | None
     status: TourStatus
     duration_nights: int
     is_hot: bool
     # Плоские поля вместо nested объектов — дешевле для больших списков
     city_id: uuid.UUID
     hotel_id: uuid.UUID
+
+
+class SimilarTourResponse(TourListItemResponse):
+    """Тур из списка рекомендаций — дополнен оценкой схожести [0, 1]."""
+
+    similarity: float
 
 
 class TourFilters(BaseModel):
@@ -122,6 +136,7 @@ class TourFilters(BaseModel):
     start_date_from: date | None = None
     start_date_to: date | None = None
     meal_type: MealType | None = None
+    category: TourCategory | None = None
     # По умолчанию клиенты видят только active туры; менеджеры могут передать другой статус
     status: TourStatus | None = TourStatus.active
     only_hot: bool = False

@@ -1,16 +1,20 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
 
 from app.core.enums import TourStatus, UserRole
 from app.core.exceptions import NotFoundError
 from app.dependencies import AdminUser, DbSession, OptionalUser, StaffUser, TourCacheDep
+from app.logic import recommender
+from app.models.tour import Tour
 from app.repositories.city import CityRepository
 from app.repositories.hotel import HotelRepository
 from app.repositories.tour import TourRepository
 from app.schemas.common import PaginatedResponse, PaginationParams
 from app.schemas.tour import (
+    SimilarTourResponse,
     TourCreate,
     TourFilters,
     TourListItemResponse,
@@ -89,6 +93,36 @@ async def update_tour(tour_id: UUID, body: TourUpdate, db: DbSession, _: StaffUs
     await repo.update(tour, body.model_dump(exclude_unset=True))
     await cache.invalidate_on_tour_change(tour_id)
     return await repo.get_by_id(tour_id, load_relations=True)
+
+
+@router.get("/{tour_id}/similar", response_model=list[SimilarTourResponse])
+async def get_similar_tours(
+    tour_id: UUID,
+    db: DbSession,
+    top_k: Annotated[int, Query(ge=1, le=20)] = 5,
+):
+    if not recommender.is_ready():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="рекомендательная система не готова",
+        )
+
+    similar = recommender.get_similar(tour_id, top_k)
+    if not similar:
+        if await TourRepository(db).get_by_id(tour_id) is None:
+            raise NotFoundError("Тур", tour_id)
+        return []
+
+    score_map = dict(similar)
+    rows = await db.scalars(select(Tour).where(Tour.id.in_(score_map)))
+    tours = sorted(rows.all(), key=lambda t: -score_map[t.id])
+    return [
+        SimilarTourResponse.model_construct(
+            **TourListItemResponse.model_validate(t).model_dump(),
+            similarity=score_map[t.id],
+        )
+        for t in tours
+    ]
 
 
 @router.delete("/{tour_id}", status_code=204)

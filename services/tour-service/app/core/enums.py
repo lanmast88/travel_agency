@@ -1,6 +1,14 @@
 from enum import Enum as PyEnum
 
 
+class TourCategory(str, PyEnum):
+    """Категория тура — определяет ценовой сегмент и уровень сервиса."""
+
+    budget = "budget"
+    comfort = "comfort"
+    luxury = "luxury"
+
+
 class MealType(str, PyEnum):
     """Тип питания в туре."""
 
