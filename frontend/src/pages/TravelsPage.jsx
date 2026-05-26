@@ -28,7 +28,11 @@ import {
   updateTour,
 } from "../features/travel/travelSlice";
 import { CalendarIcon, EditIcon, PlusIcon, SearchIcon, TrashIcon } from "../shared/ui/Icons";
-import { formatDate, formatMoney, formatSeatsLabel } from "../shared/lib/format";
+import {
+  formatDate,
+  formatMoney,
+  formatSeatsLabel,
+} from "../shared/lib/format";
 import { Pagination } from "../shared/ui/Pagination";
 
 const seatToneMap = {
@@ -123,7 +127,8 @@ function TravelsPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const currentUser = useSelector((state) => state.auth.currentUser);
-  const isStaff = currentUser?.role === "employee" || currentUser?.role === "admin";
+  const isStaff =
+    currentUser?.role === "employee" || currentUser?.role === "admin";
   const isAdmin = currentUser?.role === "admin";
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -215,10 +220,15 @@ function TravelsPage() {
     if (!editForm.name.trim()) errors.name = "Введите название";
     if (!editForm.start_date) errors.start_date = "Укажите дату начала";
     if (!editForm.end_date) errors.end_date = "Укажите дату окончания";
-    if (editForm.start_date && editForm.end_date && editForm.end_date <= editForm.start_date) {
+    if (
+      editForm.start_date &&
+      editForm.end_date &&
+      editForm.end_date <= editForm.start_date
+    ) {
       errors.end_date = "Дата окончания должна быть позже даты начала";
     }
-    if (!editForm.price || Number(editForm.price) <= 0) errors.price = "Цена должна быть больше 0";
+    if (!editForm.price || Number(editForm.price) <= 0)
+      errors.price = "Цена должна быть больше 0";
     if (editForm.available === "" || Number(editForm.available) < 0) {
       errors.available = "Количество мест не может быть отрицательным";
     }
@@ -403,7 +413,8 @@ function TravelsPage() {
   function handleEditFormChange(event) {
     const { name, value } = event.target;
     setEditForm((current) => {
-      if (name === "city_id") return { ...current, city_id: value, hotel_id: "" };
+      if (name === "city_id")
+        return { ...current, city_id: value, hotel_id: "" };
       return { ...current, [name]: value };
     });
   }
@@ -415,8 +426,13 @@ function TravelsPage() {
 
   async function handleEditTour() {
     setEditFormTouched({
-      city_id: true, hotel_id: true, name: true,
-      start_date: true, end_date: true, price: true, available: true,
+      city_id: true,
+      hotel_id: true,
+      name: true,
+      start_date: true,
+      end_date: true,
+      price: true,
+      available: true,
     });
     if (Object.keys(editFormErrors).length > 0) return;
 
@@ -505,7 +521,7 @@ function TravelsPage() {
           <Aside />
 
           <main className="min-w-0 flex-1 px-4 py-4 sm:px-6 lg:px-8">
-            <header className="flex flex-col gap-4 border-b border-slate-200/80 px-6 py-6 xl:flex-row xl:items-center xl:justify-between lg:px-10">
+            <header className="flex flex-col gap-4 border-b border-slate-200/80 px-6 py-6 xl:flex-row xl:items-center xl:justify-between">
               <div className="min-w-0 flex flex-col gap-4 xl:flex-row xl:items-center xl:flex-1">
                 <h1 className="shrink-0 text-3xl font-extrabold tracking-tight text-slate-950">
                   Путёвки
@@ -537,9 +553,9 @@ function TravelsPage() {
               </Button>
             </header>
 
-            <div className="space-y-6 px-6 py-7 lg:px-10 lg:py-8">
-              <section className="rounded-[28px] border border-slate-200 bg-white px-6 py-6 shadow-sm shadow-slate-200/60">
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_minmax(0,1.2fr)_auto] md:grid-cols-2">
+            <div className="space-y-6 px-6 py-7 lg:py-8">
+              <section className="overflow-x-auto rounded-[28px] border border-slate-200 bg-white px-6 py-6 shadow-sm shadow-slate-200/60">
+                <div className="grid gap-4 xl:grid-cols-[minmax(10rem,1fr)_minmax(26rem,1.6fr)_minmax(14rem,1.2fr)] md:grid-cols-2">
                   <div className="min-w-0 flex items-center gap-3">
                     <span className="shrink-0 text-sm font-bold text-slate-500">
                       Город
@@ -560,33 +576,39 @@ function TravelsPage() {
                     </select>
                   </div>
 
-                  <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
-                    <span className="shrink-0 text-sm font-bold text-slate-500">
+                  <div className="flex items-center gap-3">
+                    <span className="shrink-0 whitespace-nowrap text-sm font-bold text-slate-500">
                       Дата с
                     </span>
-                    <label className="flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4">
+                    <div className="relative min-w-[10rem] flex-1">
                       <input
                         type="date"
                         value={filters.dateFrom}
                         onChange={(event) =>
                           handleFilterChange("dateFrom", event.target.value)
                         }
-                        className="w-full bg-transparent text-base font-semibold text-slate-700 outline-none"
+                        className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold text-slate-700 outline-none [&::-webkit-calendar-picker-indicator]:opacity-0"
                       />
-                      <CalendarIcon className="text-slate-500" />
-                    </label>
-                    <span className="shrink-0 text-sm font-bold text-slate-500">по</span>
-                    <label className="flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4">
+                      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <CalendarIcon size={18} />
+                      </span>
+                    </div>
+                    <span className="shrink-0 text-sm font-bold text-slate-500">
+                      по
+                    </span>
+                    <div className="relative min-w-[10rem] flex-1">
                       <input
                         type="date"
                         value={filters.dateTo}
                         onChange={(event) =>
                           handleFilterChange("dateTo", event.target.value)
                         }
-                        className="w-full bg-transparent text-base font-semibold text-slate-700 outline-none"
+                        className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-base font-semibold text-slate-700 outline-none [&::-webkit-calendar-picker-indicator]:opacity-0"
                       />
-                      <CalendarIcon className="text-slate-500" />
-                    </label>
+                      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <CalendarIcon size={18} />
+                      </span>
+                    </div>
                   </div>
 
                   <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
@@ -616,7 +638,15 @@ function TravelsPage() {
                     />
                   </div>
 
-                  <label className="flex items-center justify-start gap-2 border-l border-slate-200 pl-4 text-base font-bold text-slate-700">
+                </div>
+              </section>
+
+              <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
+                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+                  <div className="text-2xl font-extrabold tracking-tight">
+                    Все путёвки
+                  </div>
+                  <label className="flex cursor-pointer items-center gap-2 text-base font-bold text-slate-700">
                     <Checkbox
                       checked={filters.urgentOnly}
                       onChange={(event) =>
@@ -627,14 +657,6 @@ function TravelsPage() {
                       Только горячие <span>🔥</span>
                     </span>
                   </label>
-                </div>
-              </section>
-
-              <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
-                <div className="border-b border-slate-200 px-6 py-5">
-                  <div className="text-2xl font-extrabold tracking-tight">
-                    Все путёвки
-                  </div>
                 </div>
 
                 {toursError || citiesError || hotelsError ? (
@@ -787,7 +809,11 @@ function TravelsPage() {
                     )}
                   </div>
 
-                  <Pagination page={page} pages={pages} onPageChange={handlePageChange} />
+                  <Pagination
+                    page={page}
+                    pages={pages}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
               </section>
             </div>
@@ -830,8 +856,14 @@ function TravelsPage() {
                   <TextField
                     {...params}
                     label="Город"
-                    error={Boolean(editFormTouched.city_id && editFormErrors.city_id)}
-                    helperText={editFormTouched.city_id && editFormErrors.city_id ? editFormErrors.city_id : " "}
+                    error={Boolean(
+                      editFormTouched.city_id && editFormErrors.city_id,
+                    )}
+                    helperText={
+                      editFormTouched.city_id && editFormErrors.city_id
+                        ? editFormErrors.city_id
+                        : " "
+                    }
                   />
                 )}
               />
@@ -839,16 +871,28 @@ function TravelsPage() {
                 options={availableEditHotels}
                 getOptionLabel={(option) => `${option.name} • ${option.stars}★`}
                 isOptionEqualToValue={(option, value) => option.id === value.id}
-                value={availableEditHotels.find((h) => h.id === editForm.hotel_id) || null}
+                value={
+                  availableEditHotels.find((h) => h.id === editForm.hotel_id) ||
+                  null
+                }
                 onChange={(e, newValue) => {
-                  setEditForm((prev) => ({ ...prev, hotel_id: newValue ? newValue.id : "" }));
+                  setEditForm((prev) => ({
+                    ...prev,
+                    hotel_id: newValue ? newValue.id : "",
+                  }));
                 }}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     label="Отель"
-                    error={Boolean(editFormTouched.hotel_id && editFormErrors.hotel_id)}
-                    helperText={editFormTouched.hotel_id && editFormErrors.hotel_id ? editFormErrors.hotel_id : " "}
+                    error={Boolean(
+                      editFormTouched.hotel_id && editFormErrors.hotel_id,
+                    )}
+                    helperText={
+                      editFormTouched.hotel_id && editFormErrors.hotel_id
+                        ? editFormErrors.hotel_id
+                        : " "
+                    }
                   />
                 )}
               />
@@ -862,14 +906,31 @@ function TravelsPage() {
               onChange={handleEditFormChange}
               onBlur={handleEditFormBlur}
               error={Boolean(editFormTouched.name && editFormErrors.name)}
-              helperText={editFormTouched.name && editFormErrors.name ? editFormErrors.name : " "}
+              helperText={
+                editFormTouched.name && editFormErrors.name
+                  ? editFormErrors.name
+                  : " "
+              }
             />
 
             <TextField
               fullWidth
               multiline
               minRows={3}
-              label={<span>Описание <span style={{ fontSize: '0.82em', fontWeight: 400, opacity: 0.7 }}>· Необязательно</span></span>}
+              label={
+                <span>
+                  Описание{" "}
+                  <span
+                    style={{
+                      fontSize: "0.82em",
+                      fontWeight: 400,
+                      opacity: 0.7,
+                    }}
+                  >
+                    · Необязательно
+                  </span>
+                </span>
+              }
               name="description"
               value={editForm.description}
               onChange={handleEditFormChange}
@@ -886,8 +947,14 @@ function TravelsPage() {
                 value={editForm.start_date}
                 onChange={handleEditFormChange}
                 onBlur={handleEditFormBlur}
-                error={Boolean(editFormTouched.start_date && editFormErrors.start_date)}
-                helperText={editFormTouched.start_date && editFormErrors.start_date ? editFormErrors.start_date : " "}
+                error={Boolean(
+                  editFormTouched.start_date && editFormErrors.start_date,
+                )}
+                helperText={
+                  editFormTouched.start_date && editFormErrors.start_date
+                    ? editFormErrors.start_date
+                    : " "
+                }
                 slotProps={{ inputLabel: { shrink: true } }}
               />
               <TextField
@@ -898,8 +965,14 @@ function TravelsPage() {
                 value={editForm.end_date}
                 onChange={handleEditFormChange}
                 onBlur={handleEditFormBlur}
-                error={Boolean(editFormTouched.end_date && editFormErrors.end_date)}
-                helperText={editFormTouched.end_date && editFormErrors.end_date ? editFormErrors.end_date : " "}
+                error={Boolean(
+                  editFormTouched.end_date && editFormErrors.end_date,
+                )}
+                helperText={
+                  editFormTouched.end_date && editFormErrors.end_date
+                    ? editFormErrors.end_date
+                    : " "
+                }
                 slotProps={{ inputLabel: { shrink: true } }}
               />
             </div>
@@ -914,7 +987,11 @@ function TravelsPage() {
                 onChange={handleEditFormChange}
                 onBlur={handleEditFormBlur}
                 error={Boolean(editFormTouched.price && editFormErrors.price)}
-                helperText={editFormTouched.price && editFormErrors.price ? editFormErrors.price : " "}
+                helperText={
+                  editFormTouched.price && editFormErrors.price
+                    ? editFormErrors.price
+                    : " "
+                }
               />
               <TextField
                 fullWidth
@@ -924,8 +1001,14 @@ function TravelsPage() {
                 value={editForm.available}
                 onChange={handleEditFormChange}
                 onBlur={handleEditFormBlur}
-                error={Boolean(editFormTouched.available && editFormErrors.available)}
-                helperText={editFormTouched.available && editFormErrors.available ? editFormErrors.available : " "}
+                error={Boolean(
+                  editFormTouched.available && editFormErrors.available,
+                )}
+                helperText={
+                  editFormTouched.available && editFormErrors.available
+                    ? editFormErrors.available
+                    : " "
+                }
               />
               <TextField
                 select
@@ -993,7 +1076,9 @@ function TravelsPage() {
             {deleteError ? <Alert severity="error">{deleteError}</Alert> : null}
             <p className="text-sm font-medium text-slate-600">
               Путёвка{" "}
-              <span className="font-bold text-slate-900">«{deletingTour?.name}»</span>{" "}
+              <span className="font-bold text-slate-900">
+                «{deletingTour?.name}»
+              </span>{" "}
               будет удалена безвозвратно.
             </p>
             <div className="flex gap-3 sm:justify-end">
@@ -1108,7 +1193,20 @@ function TravelsPage() {
               fullWidth
               multiline
               minRows={3}
-              label={<span>Описание <span style={{ fontSize: '0.82em', fontWeight: 400, opacity: 0.7 }}>· Необязательно</span></span>}
+              label={
+                <span>
+                  Описание{" "}
+                  <span
+                    style={{
+                      fontSize: "0.82em",
+                      fontWeight: 400,
+                      opacity: 0.7,
+                    }}
+                  >
+                    · Необязательно
+                  </span>
+                </span>
+              }
               name="description"
               value={tourForm.description}
               onChange={handleFormChange}
@@ -1131,7 +1229,10 @@ function TravelsPage() {
                     ? formErrors.start_date
                     : " "
                 }
-                slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: new Date().toISOString().split("T")[0] } }}
+                slotProps={{
+                  inputLabel: { shrink: true },
+                  htmlInput: { min: new Date().toISOString().split("T")[0] },
+                }}
               />
 
               <TextField
