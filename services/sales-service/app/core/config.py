@@ -41,7 +41,6 @@ class Settings(BaseSettings):
     kafka_sale_created_topic: str = "sale_created"
     # Acks=all гарантирует запись на все реплики перед подтверждением
     kafka_producer_acks: str = "all"
-    kafka_producer_retries: int = 3
 
     # Скидки по уровням лояльности, в процентах (0.0–100.0)
     loyalty_standard_discount_pct: float = 0.0
