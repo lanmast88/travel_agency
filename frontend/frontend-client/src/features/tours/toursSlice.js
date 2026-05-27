@@ -28,6 +28,15 @@ export const fetchCities = createAsyncThunk("tours/fetchCities", async (_, { rej
   }
 });
 
+export const fetchSimilarTours = createAsyncThunk("tours/fetchSimilar", async (tourId, { rejectWithValue }) => {
+  try {
+    const { data } = await http.get(`/v1/tours/${tourId}/similar`, { params: { top_k: 5 } });
+    return data;
+  } catch (e) {
+    return rejectWithValue(e.response?.data?.detail ?? "Не удалось загрузить похожие туры.");
+  }
+});
+
 const toursSlice = createSlice({
   name: "tours",
   initialState: {
@@ -42,6 +51,8 @@ const toursSlice = createSlice({
     currentTourError: null,
     cities: [],
     citiesStatus: "idle",
+    similarTours: [],
+    similarToursStatus: "idle",
   },
   reducers: {
     setPage(state, action) { state.page = action.payload; },
@@ -64,7 +75,11 @@ const toursSlice = createSlice({
 
       .addCase(fetchCities.pending, (s) => { s.citiesStatus = "loading"; })
       .addCase(fetchCities.fulfilled, (s, a) => { s.citiesStatus = "succeeded"; s.cities = a.payload; })
-      .addCase(fetchCities.rejected, (s) => { s.citiesStatus = "failed"; });
+      .addCase(fetchCities.rejected, (s) => { s.citiesStatus = "failed"; })
+
+      .addCase(fetchSimilarTours.pending, (s) => { s.similarToursStatus = "loading"; s.similarTours = []; })
+      .addCase(fetchSimilarTours.fulfilled, (s, a) => { s.similarToursStatus = "succeeded"; s.similarTours = a.payload; })
+      .addCase(fetchSimilarTours.rejected, (s) => { s.similarToursStatus = "failed"; s.similarTours = []; });
   },
 });
 
