@@ -670,14 +670,14 @@ function TravelsPage() {
                 <div className="overflow-hidden">
                   <table className="w-full table-fixed border-collapse">
                     <colgroup>
-                      <col className="w-[18%]" />
+                      <col className="w-[20%]" />
                       <col className="w-[12%]" />
                       <col className="w-[10%]" />
                       <col className="w-[10%]" />
                       <col className="w-[10%]" />
                       <col className="w-[10%]" />
-                      <col className="w-[12%]" />
-                      <col className="w-[9%]" />
+                      <col className="w-[11%]" />
+                      <col className="w-[8%]" />
                       <col className="w-[9%]" />
                     </colgroup>
                     <thead className="bg-slate-50">
@@ -701,13 +701,28 @@ function TravelsPage() {
                             tour.highlighted ? "bg-amber-50/80" : "bg-white"
                           }`}
                         >
-                          <td className="px-5 py-5 text-base font-extrabold leading-tight text-slate-900">
+                          <td className="px-5 py-4 text-base font-extrabold leading-tight text-slate-900">
                             <button
                               type="button"
                               onClick={() => navigate(`/travels/${tour.id}`)}
-                              className="text-left hover:text-brand-600 hover:underline transition-colors"
+                              className="flex items-center gap-3 text-left hover:text-brand-600 transition-colors group"
                             >
-                              {tour.name}
+                              {tour.photo_url ? (
+                                <img
+                                  src={tour.photo_url}
+                                  alt={tour.name}
+                                  className="h-11 w-16 shrink-0 rounded-xl object-cover border border-slate-100"
+                                />
+                              ) : (
+                                <div className="flex h-11 w-16 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-300 border border-slate-100">
+                                  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+                                    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                                    <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M9 5l1.5-2h3L15 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                </div>
+                              )}
+                              <span className="group-hover:underline">{tour.name}</span>
                             </button>
                           </td>
                           <td className="px-5 py-5">

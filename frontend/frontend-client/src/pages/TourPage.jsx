@@ -292,9 +292,16 @@ export default function TourPage() {
 
       {/* Шапка */}
       <section
-        className={`overflow-hidden rounded-[28px] bg-gradient-to-br ${gradient} p-8 text-white relative`}
+        className={`overflow-hidden rounded-[28px] p-8 text-white relative ${t.photo_url ? "" : `bg-gradient-to-br ${gradient}`}`}
       >
-        <div className="absolute inset-0 bg-black/15" />
+        {t.photo_url && (
+          <img
+            src={t.photo_url}
+            alt={t.name}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+        <div className={`absolute inset-0 ${t.photo_url ? "bg-black/45" : "bg-black/15"}`} />
         <div className="relative space-y-3">
           <div className="flex flex-wrap gap-2">
             {t.is_hot && (
@@ -528,19 +535,29 @@ export default function TourPage() {
                   className="group flex flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-sm shadow-slate-200/60 transition hover:-translate-y-0.5 hover:shadow-md no-underline"
                 >
                   <div
-                    className={`bg-gradient-to-br ${cardGradient} p-5 text-white`}
+                    className={`relative p-5 text-white ${s.photo_url ? "" : `bg-gradient-to-br ${cardGradient}`}`}
                   >
-                    {s.is_hot && (
-                      <span className="mb-2 inline-block rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold backdrop-blur-sm">
-                        🔥 Горящий
-                      </span>
+                    {s.photo_url && (
+                      <img
+                        src={s.photo_url}
+                        alt={s.name}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
                     )}
-                    <div className="line-clamp-2 text-sm font-extrabold leading-snug">
-                      {s.name}
-                    </div>
-                    <div className="mt-1 text-xs font-semibold text-white/75">
-                      {s.duration_nights} ночей ·{" "}
-                      {MEAL_LABELS[s.meal_type] ?? s.meal_type}
+                    <div className={`absolute inset-0 ${s.photo_url ? "bg-black/40" : ""}`} />
+                    <div className="relative">
+                      {s.is_hot && (
+                        <span className="mb-2 inline-block rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold backdrop-blur-sm">
+                          🔥 Горящий
+                        </span>
+                      )}
+                      <div className="line-clamp-2 text-sm font-extrabold leading-snug">
+                        {s.name}
+                      </div>
+                      <div className="mt-1 text-xs font-semibold text-white/75">
+                        {s.duration_nights} ночей ·{" "}
+                        {MEAL_LABELS[s.meal_type] ?? s.meal_type}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center justify-between px-5 py-3.5">

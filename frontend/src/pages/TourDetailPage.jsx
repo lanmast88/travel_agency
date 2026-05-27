@@ -113,6 +113,26 @@ export function TourDetailPage() {
                 <div className="grid gap-6 lg:grid-cols-3">
                   {/* ── Left column ── */}
                   <div className="flex flex-col gap-6 lg:col-span-2">
+                    {/* Photo */}
+                    {tour.photo_url ? (
+                      <div className="overflow-hidden rounded-[28px] border border-slate-200 shadow-sm shadow-slate-200/60">
+                        <img
+                          src={tour.photo_url}
+                          alt={tour.name}
+                          className="h-56 w-full object-cover lg:h-72"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-40 items-center justify-center gap-3 rounded-[28px] border border-dashed border-slate-200 bg-slate-50 text-slate-400 lg:h-52">
+                        <svg viewBox="0 0 24 24" fill="none" className="h-8 w-8 shrink-0" aria-hidden="true">
+                          <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                          <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
+                          <path d="M9 5l1.5-2h3L15 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span className="text-sm font-semibold">Фото не добавлено</span>
+                      </div>
+                    )}
+
                     {/* Main details */}
                     <section className="rounded-[28px] border border-slate-200 bg-white px-6 py-6 shadow-sm shadow-slate-200/60">
                       <div className="mb-5 flex flex-wrap items-center gap-2">
