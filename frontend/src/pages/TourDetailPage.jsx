@@ -23,6 +23,22 @@ const STATUS_CLASSES = {
   archived: "bg-slate-200 text-slate-500",
 };
 
+const CATEGORY_META = {
+  budget:  { label: "Бюджет",  className: "bg-emerald-50 text-emerald-700" },
+  comfort: { label: "Комфорт", className: "bg-blue-50 text-blue-700" },
+  luxury:  { label: "Люкс",    className: "bg-amber-50 text-amber-700" },
+};
+
+function CategoryBadge({ category }) {
+  const meta = CATEGORY_META[category];
+  if (!meta) return null;
+  return (
+    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${meta.className}`}>
+      {meta.label}
+    </span>
+  );
+}
+
 function BackIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
@@ -146,6 +162,7 @@ export function TourDetailPage() {
                             Горящий 🔥
                           </span>
                         )}
+                        <CategoryBadge category={tour.category} />
                         <span className="inline-flex rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700">
                           {MEAL_LABELS[tour.meal_type] ?? tour.meal_type}
                         </span>

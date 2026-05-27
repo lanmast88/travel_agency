@@ -33,6 +33,10 @@ function buildToursParams(state) {
     params.only_hot = true;
   }
 
+  if (state.filters.category) {
+    params.category = state.filters.category;
+  }
+
   return params;
 }
 
@@ -165,6 +169,7 @@ const travelSlice = createSlice({
       priceTo: "",
       urgentOnly: false,
       search: "",
+      category: "",
     },
     toursStatus: "idle",
     toursError: null,

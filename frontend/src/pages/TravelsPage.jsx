@@ -41,6 +41,22 @@ const seatToneMap = {
   danger: "bg-rose-500",
 };
 
+const categoryMeta = {
+  budget:  { label: "Бюджет",  className: "bg-emerald-50 text-emerald-700" },
+  comfort: { label: "Комфорт", className: "bg-blue-50 text-blue-700" },
+  luxury:  { label: "Люкс",    className: "bg-amber-50 text-amber-700" },
+};
+
+function CategoryBadge({ category }) {
+  const meta = categoryMeta[category];
+  if (!meta) return null;
+  return (
+    <span className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold ${meta.className}`}>
+      {meta.label}
+    </span>
+  );
+}
+
 const statusToneMap = {
   hot: "bg-rose-50 text-rose-500",
   success: "bg-emerald-50 text-emerald-500",
@@ -190,6 +206,7 @@ function TravelsPage() {
   }, [
     dispatch,
     filters.cityId,
+    filters.category,
     filters.dateFrom,
     filters.dateTo,
     filters.priceFrom,
@@ -639,6 +656,30 @@ function TravelsPage() {
                   </div>
 
                 </div>
+
+                <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
+                  <span className="shrink-0 text-sm font-bold text-slate-500">Категория</span>
+                  {[
+                    { value: "", label: "Все" },
+                    { value: "budget",  label: "Бюджет",  activeClass: "bg-emerald-500 text-white border-emerald-500" },
+                    { value: "comfort", label: "Комфорт", activeClass: "bg-blue-500 text-white border-blue-500" },
+                    { value: "luxury",  label: "Люкс",    activeClass: "bg-amber-500 text-white border-amber-500" },
+                  ].map(({ value, label, activeClass }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => handleFilterChange("category", value)}
+                      className={`h-9 rounded-2xl border px-4 text-sm font-bold transition ${
+                        filters.category === value
+                          ? (activeClass ?? "bg-slate-800 text-white border-slate-800")
+                          : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-white"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
               </section>
 
               <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
@@ -750,6 +791,7 @@ function TravelsPage() {
                           </td>
                           <td className="px-5 py-5">
                             <div className="flex flex-wrap gap-1.5">
+                              <CategoryBadge category={tour.category} />
                               {tour.services.map((service) => (
                                 <span
                                   key={service}

@@ -21,6 +21,18 @@ const MEAL_LABELS = {
   all_inclusive: "Всё включено",
 };
 
+const CATEGORY_META = {
+  budget:  { label: "Бюджет",  className: "bg-white/20 text-white" },
+  comfort: { label: "Комфорт", className: "bg-white/20 text-white" },
+  luxury:  { label: "✨ Люкс", className: "bg-amber-400/30 text-white" },
+};
+
+const CATEGORY_META_CARD = {
+  budget:  { label: "Бюджет",  className: "bg-emerald-50 text-emerald-700" },
+  comfort: { label: "Комфорт", className: "bg-blue-50 text-blue-700" },
+  luxury:  { label: "Люкс",    className: "bg-amber-50 text-amber-700" },
+};
+
 function formatDate(d) {
   return new Intl.DateTimeFormat("ru-RU", {
     day: "2-digit",
@@ -309,6 +321,11 @@ export default function TourPage() {
                 🔥 Горящий тур
               </span>
             )}
+            {CATEGORY_META[t.category] && (
+              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold backdrop-blur-sm ${CATEGORY_META[t.category].className}`}>
+                {CATEGORY_META[t.category].label}
+              </span>
+            )}
             {t.available === 0 && (
               <span className="inline-flex items-center rounded-full bg-rose-500/80 px-3 py-1 text-xs font-bold">
                 Мест нет
@@ -560,13 +577,20 @@ export default function TourPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between px-5 py-3.5">
+                  <div className="flex items-center justify-between gap-2 px-5 py-3.5">
                     <span className="text-base font-black text-slate-900">
                       {formatPrice(s.price)}
                     </span>
-                    <span className="text-xs font-bold text-slate-400">
-                      {Math.round(s.similarity * 100)}% схожесть
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {CATEGORY_META_CARD[s.category] && (
+                        <span className={`rounded-lg px-2 py-0.5 text-xs font-bold ${CATEGORY_META_CARD[s.category].className}`}>
+                          {CATEGORY_META_CARD[s.category].label}
+                        </span>
+                      )}
+                      <span className="text-xs font-bold text-slate-400">
+                        {Math.round(s.similarity * 100)}% схожесть
+                      </span>
+                    </div>
                   </div>
                 </Link>
               );
