@@ -22,6 +22,7 @@ import {
   createSale,
   fetchSales,
   fetchSalesLookups,
+  resetLookups,
   setSalesFilter,
   setSalesPage,
 } from "../features/sales/salesSlice";
@@ -371,8 +372,11 @@ export function SalesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    if (lookupsStatus === "idle") dispatch(fetchSalesLookups());
-  }, [dispatch, lookupsStatus]);
+    dispatch(fetchSalesLookups());
+    return () => {
+      dispatch(resetLookups());
+    };
+  }, [dispatch]);
 
   useEffect(() => {
     if (searchParams.get("open") === "create" && lookupsStatus === "succeeded") {

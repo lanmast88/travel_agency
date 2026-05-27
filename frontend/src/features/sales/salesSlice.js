@@ -28,18 +28,37 @@ export const fetchSales = createAsyncThunk(
   },
 );
 
+async function fetchAllTours() {
+  const PAGE_SIZE = 100;
+  const first = await http.get("/v1/tours", { params: { page: 1, page_size: PAGE_SIZE } });
+  const { items, total } = first.data;
+  const allTours = [...items];
+
+  const remaining = total - allTours.length;
+  if (remaining > 0) {
+    const extraPages = Math.ceil(remaining / PAGE_SIZE);
+    const requests = Array.from({ length: extraPages }, (_, i) =>
+      http.get("/v1/tours", { params: { page: i + 2, page_size: PAGE_SIZE } }),
+    );
+    const results = await Promise.all(requests);
+    for (const r of results) allTours.push(...r.data.items);
+  }
+
+  return allTours;
+}
+
 export const fetchSalesLookups = createAsyncThunk(
   "sales/fetchSalesLookups",
   async (_, { rejectWithValue }) => {
     try {
-      const [clientsRes, toursRes, usersRes] = await Promise.all([
+      const [clientsRes, tours, usersRes] = await Promise.all([
         http.get("/v1/clients", { params: { page: 1, page_size: 100 } }),
-        http.get("/v1/tours", { params: { page: 1, page_size: 100 } }),
+        fetchAllTours(),
         http.get("/v1/users", { params: { limit: 500 } }),
       ]);
       return {
         clients: clientsRes.data.items,
-        tours: toursRes.data.items,
+        tours,
         users: usersRes.data,
       };
     } catch (error) {
@@ -117,6 +136,9 @@ const salesSlice = createSlice({
       state.cancelStatus = "idle";
       state.cancelError = null;
     },
+    resetLookups(state) {
+      state.lookupsStatus = "idle";
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -180,6 +202,6 @@ const salesSlice = createSlice({
   },
 });
 
-export const { setSalesFilter, setSalesPage, clearCreateSaleState, clearCancelSaleState } =
+export const { setSalesFilter, setSalesPage, clearCreateSaleState, clearCancelSaleState, resetLookups } =
   salesSlice.actions;
 export const salesReducer = salesSlice.reducer;

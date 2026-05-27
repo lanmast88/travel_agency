@@ -27,10 +27,11 @@ export const fetchDashboardData = createAsyncThunk(
   "dashboard/fetchDashboardData",
   async (_, { rejectWithValue }) => {
     try {
-      const [salesRes, clientsRes, toursRes, usersRes, citiesRes] = await Promise.allSettled([
+      const [salesRes, clientsRes, toursRes, hotToursRes, usersRes, citiesRes] = await Promise.allSettled([
         http.get("/v1/sales", { params: { page: 1, page_size: 6 } }),
         http.get("/v1/clients", { params: { page: 1, page_size: 1 } }),
         http.get("/v1/tours", { params: { page: 1, page_size: 100 } }),
+        http.get("/v1/tours", { params: { page: 1, page_size: 4, only_hot: true } }),
         http.get("/v1/users", { params: { limit: 200 } }),
         http.get("/v1/cities", { params: { page: 1, page_size: 100 } }),
       ]);
@@ -39,6 +40,7 @@ export const fetchDashboardData = createAsyncThunk(
 
       const sales = ok(salesRes) ? salesRes.value.data.items : [];
       const tours = ok(toursRes) ? toursRes.value.data.items : [];
+      const hotTours = ok(hotToursRes) ? hotToursRes.value.data.items : [];
       const users = ok(usersRes) ? usersRes.value.data : [];
       const cities = ok(citiesRes) ? citiesRes.value.data.items : [];
 
@@ -67,9 +69,7 @@ export const fetchDashboardData = createAsyncThunk(
           status: STATUS_LABELS[sale.status] ?? sale.status,
           color: avatarColor(sale.employee_id),
         })),
-        popularTrips: tours
-          .filter((t) => t.is_hot)
-          .slice(0, 4)
+        popularTrips: hotTours
           .map((tour, i) => ({
             id: tour.id,
             title: tour.name,

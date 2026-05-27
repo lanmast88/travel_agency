@@ -71,13 +71,14 @@ async def get_tour(tour_id: UUID, db: DbSession, cache: TourCacheDep):
 
 
 @router.post("", response_model=TourResponse, status_code=201)
-async def create_tour(body: TourCreate, db: DbSession, _: StaffUser):
+async def create_tour(body: TourCreate, db: DbSession, _: StaffUser, cache: TourCacheDep):
     if await CityRepository(db).get_by_id(body.city_id) is None:
         raise NotFoundError("Город", body.city_id)
     if await HotelRepository(db).get_by_id(body.hotel_id) is None:
         raise NotFoundError("Отель", body.hotel_id)
     repo = TourRepository(db)
     tour = await repo.create(**body.model_dump())
+    await cache.invalidate_on_tour_change(tour.id)
     return await repo.get_by_id(tour.id, load_relations=True)
 
 

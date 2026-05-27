@@ -127,7 +127,7 @@ function DashboardContent() {
                             <div className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-400 whitespace-nowrap">
                               {stat.label}
                             </div>
-                            <div className="mt-3 text-5xl font-black tracking-tight text-slate-950">
+                            <div className="mt-3 text-5xl font-black tracking-tight text-slate-950 whitespace-nowrap">
                               {formatMoneyCompact(stat.value)}
                             </div>
                           </div>

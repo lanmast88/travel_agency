@@ -72,11 +72,6 @@ function Aside() {
               <item.icon size={18} className="shrink-0" />
               <span>{item.label}</span>
             </span>
-            {item.badge ? (
-              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-600">
-                {item.badge}
-              </span>
-            ) : null}
           </NavLink>
         ))}
         {(currentUser?.role === "admin" ||

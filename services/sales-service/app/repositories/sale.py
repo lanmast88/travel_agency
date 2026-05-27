@@ -44,6 +44,7 @@ class SaleRepository:
     async def save(self, sale: Sale) -> Sale:
         """Сбрасывает изменения модели в транзакцию (используется после cancel())."""
         await self._session.flush()
+        await self._session.refresh(sale)
         return sale
 
     async def list(
