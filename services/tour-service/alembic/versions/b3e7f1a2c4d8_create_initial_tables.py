@@ -82,13 +82,50 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.CheckConstraint("rating >= 1 AND rating <= 5", name="ck_review_rating"),
     )
-    op.create_index("ix_review_tour_id", "reviews", ["tour_id"])
     op.create_index("ix_review_client_id", "reviews", ["client_id"])
     op.create_index("uq_review_client_tour", "reviews", ["client_id", "tour_id"], unique=True)
     op.create_index("ix_review_tour_created", "reviews", ["tour_id", "created_at"])
 
+    op.execute("""
+        CREATE OR REPLACE FUNCTION update_updated_at()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at = NOW();
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+    """)
+
+    op.execute("""
+        CREATE TRIGGER reviews_updated_at
+            BEFORE UPDATE ON reviews
+            FOR EACH ROW
+            EXECUTE FUNCTION update_updated_at();
+    """)
+
 
 def downgrade() -> None:
+    op.execute("DROP TRIGGER IF EXISTS reviews_updated_at ON reviews")
+    op.execute("DROP FUNCTION IF EXISTS update_updated_at()")
+
+    op.drop_index("ix_review_tour_created", table_name="reviews", if_exists=True)
+    op.drop_index("uq_review_client_tour", table_name="reviews", if_exists=True)
+    op.drop_index("ix_review_client_id", table_name="reviews", if_exists=True)
+    op.drop_index("ix_review_tour_id", table_name="reviews", if_exists=True)
+    op.drop_index("ix_tour_created_at", table_name="tours", if_exists=True)
+    op.drop_index("ix_tour_price", table_name="tours", if_exists=True)
+    op.drop_index("ix_tour_status_start", table_name="tours", if_exists=True)
+    op.drop_index("ix_tour_status_city_start", table_name="tours", if_exists=True)
+    op.drop_index("ix_tour_status", table_name="tours", if_exists=True)
+    op.drop_index("ix_tour_start_date", table_name="tours", if_exists=True)
+    op.drop_index("ix_tour_hotel_id", table_name="tours", if_exists=True)
+    op.drop_index("ix_tour_city_id", table_name="tours", if_exists=True)
+    op.drop_index("ix_hotel_city_stars", table_name="hotels", if_exists=True)
+    op.drop_index("ix_hotel_name", table_name="hotels", if_exists=True)
+    op.drop_index("ix_hotel_city_id", table_name="hotels", if_exists=True)
+    op.drop_index("ix_city_country_name", table_name="cities", if_exists=True)
+    op.drop_index("ix_city_name", table_name="cities", if_exists=True)
+
     op.drop_table("reviews")
     op.drop_table("tours")
     op.drop_table("hotels")

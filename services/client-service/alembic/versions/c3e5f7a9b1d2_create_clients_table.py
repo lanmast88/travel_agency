@@ -86,7 +86,7 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.execute("DROP TRIGGER IF EXISTS clients_updated_at ON clients")
-    op.execute("DROP FUNCTION IF EXISTS update_updated_at")
+    op.execute("DROP FUNCTION IF EXISTS update_updated_at()")
 
     op.drop_index("ix_client_loyalty_created", table_name="clients", if_exists=True)
     op.drop_index("ix_clients_email", table_name="clients", if_exists=True)

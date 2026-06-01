@@ -20,7 +20,8 @@ def _future_exp() -> int:
 
 
 def _past_exp() -> int:
-    return int(datetime.now(timezone.utc).timestamp()) - 1
+    # Достаточно далеко в прошлом, чтобы past + любой TTL < реального now
+    return int(datetime.now(timezone.utc).timestamp()) - 90000  # -25 часов
 
 
 class TestTokenTypeSeparation:

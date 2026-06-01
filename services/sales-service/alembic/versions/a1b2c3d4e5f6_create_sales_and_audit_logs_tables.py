@@ -124,7 +124,7 @@ def downgrade() -> None:
     op.drop_table("audit_logs")
 
     op.execute("DROP TRIGGER IF EXISTS sales_updated_at ON sales")
-    op.execute("DROP FUNCTION IF EXISTS update_updated_at")
+    op.execute("DROP FUNCTION IF EXISTS update_updated_at()")
 
     op.drop_index("ix_sale_status_date", table_name="sales", if_exists=True)
     op.drop_index("ix_sale_tour_id", table_name="sales", if_exists=True)

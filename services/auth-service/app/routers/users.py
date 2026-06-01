@@ -32,7 +32,7 @@ async def get_me(current_user: CurrentUser) -> User:
 async def update_me(data: UserUpdate, current_user: CurrentUser, repo: UserRepoDep) -> User:
     if not data.has_changes():
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="нет данных для обновления",
         )
     return await repo.update(current_user, data.model_dump(exclude_unset=True))
@@ -69,7 +69,7 @@ async def get_user(user: UserOr404, _: EmployeeUser) -> User:
 async def update_user(data: UserAdminUpdate, user: UserOr404, _: AdminUser, repo: UserRepoDep) -> User:
     if not data.has_changes():
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="нет данных для обновления",
         )
     return await repo.update(user, data.model_dump(exclude_unset=True))
