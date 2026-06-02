@@ -84,8 +84,16 @@ function TourCard({ tour, cityName }) {
       to={`/tours/${tour.id}`}
       className="group flex flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm shadow-slate-200/60 transition hover:-translate-y-1 hover:shadow-md hover:border-slate-300 no-underline"
     >
-      <div className={`relative h-32 bg-gradient-to-br ${gradient} flex items-end p-4`}>
-        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${statusTone} bg-white/90`}>
+      <div className={`relative h-32 flex items-end p-4 ${tour.photo_url ? "" : `bg-gradient-to-br ${gradient}`}`}>
+        {tour.photo_url && (
+          <img
+            src={tour.photo_url}
+            alt={tour.name}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+        <div className={`absolute inset-0 ${tour.photo_url ? "bg-black/35" : ""}`} />
+        <span className={`relative inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${statusTone} bg-white/90`}>
           {statusLabel}
         </span>
       </div>
